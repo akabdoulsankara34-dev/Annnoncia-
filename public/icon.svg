@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="coverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B35"/>
+      <stop offset="50%" stop-color="#F7931E"/>
+      <stop offset="100%" stop-color="#FF4B4B"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE600"/>
+      <stop offset="100%" stop-color="#FFAA00"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#000000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Background circle with safe zone margin -->
+  <rect width="512" height="512" rx="108" fill="#1B4965"/>
+  <circle cx="256" cy="256" r="230" fill="#2B6CB0" opacity="0.4"/>
+  <circle cx="256" cy="256" r="200" fill="#FDFBF7"/>
+
+  <!-- Book Base -->
+  <g filter="url(#shadow)">
+    <!-- Book Backing -->
+    <path d="M 80 140 C 180 110, 240 130, 256 145 C 272 130, 332 110, 432 140 L 432 370 C 332 340, 272 360, 256 375 C 240 360, 180 340, 80 370 Z" fill="#E2E8F0"/>
+    <!-- Left Page -->
+    <path d="M 86 145 C 180 120, 240 138, 252 149 L 252 370 C 240 358, 180 344, 86 365 Z" fill="#FFFFFF"/>
+    <!-- Right Page -->
+    <path d="M 426 145 C 332 120, 272 138, 260 149 L 260 370 C 272 358, 332 344, 426 365 Z" fill="#FFFDF9"/>
+    <!-- Spine binding -->
+    <path d="M 252 149 L 260 149 L 260 372 L 252 372 Z" fill="#CBD5E1"/>
+  </g>
+
+  <!-- Book Spine Stitching & Ribbons -->
+  <path d="M 256 120 L 256 400" stroke="#FF6B35" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- Decorative Book Content: Letters and Numbers on Pages -->
+  <!-- Left Page: Reading & Letters -->
+  <text x="140" y="220" font-family="'Comic Sans MS', 'Fredoka', 'Nunito', sans-serif" font-weight="900" font-size="54" fill="#E63946" text-anchor="middle">A</text>
+  <text x="195" y="220" font-family="'Comic Sans MS', 'Fredoka', 'Nunito', sans-serif" font-weight="900" font-size="44" fill="#2A9D8F" text-anchor="middle">B</text>
+  <text x="140" y="275" font-family="'Comic Sans MS', 'Fredoka', 'Nunito', sans-serif" font-weight="900" font-size="44" fill="#E76F51" text-anchor="middle">C</text>
+  <text x="195" y="275" font-family="'Comic Sans MS', 'Fredoka', 'Nunito', sans-serif" font-weight="900" font-size="50" fill="#F4A261" text-anchor="middle">ba</text>
+  <circle cx="165" cy="320" r="16" fill="#F77F00"/>
+  <circle cx="185" cy="320" r="12" fill="#FCBF49"/>
+
+  <!-- Right Page: Math & Numbers -->
+  <text x="315" y="220" font-family="'Comic Sans MS', 'Fredoka', 'Nunito', sans-serif" font-weight="900" font-size="52" fill="#1D3557" text-anchor="middle">1</text>
+  <text x="370" y="220" font-family="'Comic Sans MS', 'Fredoka', 'Nunito', sans-serif" font-weight="900" font-size="52" fill="#457B9D" text-anchor="middle">2</text>
+  <text x="340" y="280" font-family="'Comic Sans MS', 'Fredoka', 'Nunito', sans-serif" font-weight="900" font-size="48" fill="#E63946" text-anchor="middle">+ 3</text>
+  <!-- Mango / Star fruit decoration on right -->
+  <path d="M 330 310 Q 360 300 370 330 Q 355 355 330 335 Z" fill="#FFB703"/>
+  <path d="M 355 305 Q 365 295 370 300" stroke="#2D6A4F" stroke-width="3" fill="none"/>
+
+  <!-- Cute Guide Character: Kalo the Chameleon peeking over top of the book -->
+  <g transform="translate(256, 110)">
+    <!-- Chameleon Head -->
+    <path d="M -45 -10 C -45 -55, 45 -55, 45 -10 C 45 10, -45 10, -45 -10 Z" fill="#52B788"/>
+    <!-- Ridge on head -->
+    <circle cx="-25" cy="-40" r="8" fill="#40916C"/>
+    <circle cx="0" cy="-48" r="10" fill="#40916C"/>
+    <circle cx="25" cy="-40" r="8" fill="#40916C"/>
+    <!-- Big cute eyes -->
+    <circle cx="-22" cy="-18" r="18" fill="#FFFFFF"/>
+    <circle cx="-19" cy="-18" r="9" fill="#1B4332"/>
+    <circle cx="-16" cy="-22" r="4" fill="#FFFFFF"/>
+    
+    <circle cx="22" cy="-18" r="18" fill="#FFFFFF"/>
+    <circle cx="19" cy="-18" r="9" fill="#1B4332"/>
+    <circle cx="22" cy="-22" r="4" fill="#FFFFFF"/>
+
+    <!-- Happy smile -->
+    <path d="M -15 2 Q 0 15 15 2" stroke="#1B4332" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <!-- Cheerful rosy cheeks -->
+    <circle cx="-32" cy="-4" r="7" fill="#FF8FA3" opacity="0.7"/>
+    <circle cx="32" cy="-4" r="7" fill="#FF8FA3" opacity="0.7"/>
+    <!-- Little paws holding page edge -->
+    <ellipse cx="-45" cy="18" rx="10" ry="7" fill="#40916C"/>
+    <ellipse cx="45" cy="18" rx="10" ry="7" fill="#40916C"/>
+  </g>
+
+  <!-- Stars around the book for magic -->
+  <path d="M 100 90 L 105 105 L 120 105 L 108 115 L 112 130 L 100 120 L 88 130 L 92 115 L 80 105 L 95 105 Z" fill="#FFD166"/>
+  <path d="M 410 80 L 414 93 L 427 93 L 416 102 L 420 115 L 410 107 L 400 115 L 404 102 L 393 93 L 406 93 Z" fill="#FFD166"/>
+  <path d="M 256 440 L 261 453 L 274 453 L 263 462 L 267 475 L 256 467 L 245 475 L 249 462 L 238 453 L 251 453 Z" fill="#FFD166"/>
+</svg>

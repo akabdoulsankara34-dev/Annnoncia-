@@ -1,0 +1,6 @@
+{
+  "name": "Le Grand Livre Magique de CP",
+  "description": "Livre éducatif interactif pour enfant de 6 ans (CP) : apprentissage de la lecture, du calcul, écriture au doigt et contes avec guide animé.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
