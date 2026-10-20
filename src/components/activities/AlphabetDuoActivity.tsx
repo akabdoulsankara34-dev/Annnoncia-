@@ -19,7 +19,7 @@ export const AlphabetDuoActivity: React.FC<AlphabetDuoActivityProps> = ({
   letters,
   onSuccess,
 }) => {
-  const [selectedCase, setSelectedCase] = useState<'both' | 'upper' | 'lower'>('both');
+  const [selectedCase, setSelectedCase] = useState<'both' | 'upper' | 'lower' | 'cursive'>('both');
   const [exploredLetters, setExploredLetters] = useState<string[]>([]);
   const [activeLetterIdx, setActiveLetterIdx] = useState<number>(0);
 
@@ -72,7 +72,7 @@ export const AlphabetDuoActivity: React.FC<AlphabetDuoActivityProps> = ({
             selectedCase === 'both' ? 'bg-amber-400 text-amber-950 shadow-xs' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          Les 2 ensemble (Aa)
+          Aa (Les 2)
         </button>
         <button
           onClick={() => setSelectedCase('upper')}
@@ -80,7 +80,7 @@ export const AlphabetDuoActivity: React.FC<AlphabetDuoActivityProps> = ({
             selectedCase === 'upper' ? 'bg-amber-400 text-amber-950 shadow-xs' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          MAJUSCULES (A)
+          MAJ (A)
         </button>
         <button
           onClick={() => setSelectedCase('lower')}
@@ -88,7 +88,15 @@ export const AlphabetDuoActivity: React.FC<AlphabetDuoActivityProps> = ({
             selectedCase === 'lower' ? 'bg-amber-400 text-amber-950 shadow-xs' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          minuscules (a)
+          min (a)
+        </button>
+        <button
+          onClick={() => setSelectedCase('cursive')}
+          className={`px-3 py-1.5 rounded-xl font-black text-xs sm:text-sm transition cursor-pointer ${
+            selectedCase === 'cursive' ? 'bg-indigo-600 text-white shadow-xs' : 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100'
+          }`}
+        >
+          ✍️ Manuscrit
         </button>
       </div>
 
@@ -100,7 +108,7 @@ export const AlphabetDuoActivity: React.FC<AlphabetDuoActivityProps> = ({
           return (
             <div
               key={item.upper}
-              onClick={() => handlePronounce(item, selectedCase)}
+              onClick={() => handlePronounce(item, selectedCase === 'cursive' ? 'both' : selectedCase)}
               className="relative p-5 rounded-3xl bg-white border-3 border-amber-300 hover:border-amber-400 shadow-md hover:scale-102 active:scale-98 transition flex flex-col items-center text-center cursor-pointer group"
             >
               {/* Badge exploré */}
@@ -112,15 +120,28 @@ export const AlphabetDuoActivity: React.FC<AlphabetDuoActivityProps> = ({
 
               {/* Affichage des lettres en grand format */}
               <div className="flex items-baseline justify-center gap-3 my-2">
-                {(selectedCase === 'both' || selectedCase === 'upper') && (
-                  <span className="text-6xl sm:text-7xl font-black text-rose-500 group-hover:scale-110 transition drop-shadow-xs">
-                    {item.upper}
-                  </span>
-                )}
-                {(selectedCase === 'both' || selectedCase === 'lower') && (
-                  <span className="text-5xl sm:text-6xl font-black text-blue-600 group-hover:scale-110 transition drop-shadow-xs">
-                    {item.lower}
-                  </span>
+                {selectedCase === 'cursive' ? (
+                  <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-indigo-50 border-2 border-indigo-200">
+                    <span className="text-5xl sm:text-6xl font-manuscrit text-indigo-900 group-hover:scale-110 transition">
+                      {item.lower}
+                    </span>
+                    <span className="text-xs font-bold text-indigo-600 uppercase tracking-wide">
+                      Cursive attachée
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    {(selectedCase === 'both' || selectedCase === 'upper') && (
+                      <span className="text-6xl sm:text-7xl font-black text-rose-500 group-hover:scale-110 transition drop-shadow-xs">
+                        {item.upper}
+                      </span>
+                    )}
+                    {(selectedCase === 'both' || selectedCase === 'lower') && (
+                      <span className="text-5xl sm:text-6xl font-black text-blue-600 group-hover:scale-110 transition drop-shadow-xs">
+                        {item.lower}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
 

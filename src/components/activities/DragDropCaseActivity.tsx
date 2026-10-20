@@ -94,6 +94,9 @@ export const DragDropCaseActivity: React.FC<DragDropCaseActivityProps> = ({
     setDragPos(null);
   };
 
+  // Dernier élément associé pour l'animation d'étoiles
+  const [justMatchedId, setJustMatchedId] = useState<string | null>(null);
+
   // Validation du dépôt
   const validateDrop = (token: DragDropPair, targetId: string) => {
     if (token.id === targetId) {
@@ -101,15 +104,20 @@ export const DragDropCaseActivity: React.FC<DragDropCaseActivityProps> = ({
       const nextMatched = [...matchedIds, token.id];
       setMatchedIds(nextMatched);
       setSelectedTokenId(null);
+      setJustMatchedId(token.id);
 
       sound.playSuccess();
       speakText(`Bravo ! Le petit ${token.lower} est avec le grand ${token.upper} !`);
+
+      setTimeout(() => {
+        setJustMatchedId(null);
+      }, 1500);
 
       if (nextMatched.length === pairs.length) {
         setTimeout(() => {
           sound.playStarReward();
           onSuccess();
-        }, 800);
+        }, 900);
       }
     } else {
       // Erreur bienveillante
@@ -154,20 +162,31 @@ export const DragDropCaseActivity: React.FC<DragDropCaseActivityProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
           {pairs.map((p) => {
             const isMatched = matchedIds.includes(p.id);
+            const isJustMatched = justMatchedId === p.id;
 
             return (
               <div
                 key={`slot_${p.id}`}
                 ref={(el) => { dropZoneRefs.current[p.id] = el; }}
                 onClick={() => handleTargetSlotClick(p)}
-                className={`min-h-[115px] p-3 rounded-3xl border-3 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer ${
-                  isMatched
+                className={`relative min-h-[120px] p-3 rounded-3xl border-3 flex flex-col items-center justify-between transition-all duration-300 cursor-pointer ${
+                  isJustMatched
+                    ? 'bg-amber-100 border-amber-400 scale-110 shadow-xl ring-4 ring-yellow-400 animate-star-float'
+                    : isMatched
                     ? 'bg-emerald-100 border-emerald-500 scale-102 shadow-md'
                     : selectedTokenId === p.id
                     ? 'bg-amber-100 border-amber-500 ring-4 ring-amber-300 animate-pulse'
                     : 'bg-white border-dashed border-rose-300 hover:border-rose-500 shadow-xs'
                 }`}
               >
+                {/* Étoiles jaillissantes au moment de la réussite */}
+                {isJustMatched && (
+                  <div className="absolute -top-3 -right-3 z-20 flex items-center gap-1 bg-yellow-400 text-amber-950 font-black text-xs px-2 py-0.5 rounded-full shadow-md animate-bounce">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-900 animate-spin" />
+                    <span>Bravo !</span>
+                  </div>
+                )}
+
                 {/* Grande lettre Majuscule */}
                 <div className="flex items-center gap-1.5">
                   <span className="text-4xl sm:text-5xl font-black text-rose-600">

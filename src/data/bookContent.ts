@@ -907,6 +907,173 @@ export const CHAPITRES: Chapter[] = [
         }
       }
     ]
+  },
+
+  // CHAPITRE 7 : COMPTER JUSQU'À 50 ET LES DIZAINES (CALCUL)
+  {
+    id: 'chap_7',
+    number: 7,
+    subject: 'calcul',
+    title: { fr: 'Compter jusqu’à 50 & Les Dizaines', moore: 'Sõd ta 50 la piisi', dioula: 'Jate fo 50 ni tanw' },
+    description: { fr: 'Apprends les nombres jusqu’à 50, les dizaines (10, 20, 30, 40, 50) et les paquets de mangues !', moore: 'Bãng sõbre 50 taaba', dioula: 'Jateminɛ 50 dɔnni' },
+    badgeEmoji: '🪙',
+    iconSvg: 'numbers',
+    colorScheme: {
+      primary: '#0D9488',
+      secondary: '#CCFBF1',
+      accent: '#F59E0B',
+      bgPattern: 'bg-[#F0FDFA]',
+    },
+    stickerReward: {
+      id: 'stk_fifty_coins',
+      title: { fr: 'Trésor des 50 Nombres', moore: 'Sõb-kãsenga', dioula: 'Jate masa' },
+      svg: 'calabash_gold'
+    },
+    pages: [
+      // Page 42 : Le grand tableau interactif des 50 nombres
+      {
+        id: 'p_7_1',
+        pageNumber: 42,
+        chapterId: 'chap_7',
+        title: { fr: 'Le Grand Tableau de 1 à 50', moore: 'Teeblo 1 ta 50', dioula: 'Tebili 1 fo 50' },
+        instruction: { fr: 'Explore tous les nombres de 1 à 50 ! Touche les dizaines dorées (10, 20, 30, 40, 50) !', moore: 'Sõd piisi', dioula: 'Tanw jate' },
+        activity: {
+          type: 'count_to_50',
+          prompt: { fr: 'Touche n’importe quel nombre pour l’entendre ou lance le jeu de piste !' },
+          countTo50Data: {
+            start: 1,
+            end: 50,
+            targetFind: 34
+          }
+        }
+      },
+      // Page 43 : Les paquets de 10 mangues (Dizaines et Unités)
+      {
+        id: 'p_7_2',
+        pageNumber: 43,
+        chapterId: 'chap_7',
+        title: { fr: 'Les Paquets de 10 (Dizaines et Unités)', moore: 'Mangasi piisi', dioula: 'Mangoro tan-tan' },
+        instruction: { fr: 'Chaque grand panier compte pour 10 mangues. Combien y en a-t-il au total ?', moore: 'Sõd mangasi fãa', dioula: 'Mangoro bɛɛ jate' },
+        activity: {
+          type: 'tens_units',
+          prompt: { fr: 'Calcule 3 paquets de 10 et 4 mangues seules !' },
+          tensUnitsData: {
+            tens: 3,
+            units: 4,
+            itemName: { fr: 'mangues' },
+            itemType: 'mango'
+          }
+        }
+      },
+      // Page 44 : Le Trésor des pièces de monnaie (FCFA)
+      {
+        id: 'p_7_3',
+        pageNumber: 44,
+        chapterId: 'chap_7',
+        title: { fr: 'Les Pièces de Monnaie au Marché', moore: 'Raaga ligdi', dioula: 'Sugu wari' },
+        instruction: { fr: 'Awa a 4 sachets de 10 pièces et 5 pièces seules. Quel est le montant ?', moore: 'Ligdi sõdgre', dioula: 'Wari jateminɛ' },
+        activity: {
+          type: 'tens_units',
+          prompt: { fr: '4 paquets de 10 et 5 unités, ça fait combien ?' },
+          tensUnitsData: {
+            tens: 4,
+            units: 5,
+            itemName: { fr: 'pièces de monnaie' },
+            itemType: 'coin'
+          }
+        }
+      },
+      // Page 45 : La suite numérique jusqu'à 50
+      {
+        id: 'p_7_4',
+        pageNumber: 45,
+        chapterId: 'chap_7',
+        title: { fr: 'La Suite des Nombres jusqu’à 50', moore: 'Sõbre nins n pʋgd taaba', dioula: 'Jatelen tũunugna' },
+        instruction: { fr: 'Quel nombre vient juste après 29 et avant 31 ?', moore: 'Sõbre bãngre', dioula: 'Jatelen cɛmancɛ' },
+        activity: {
+          type: 'missing_letter_train',
+          prompt: { fr: 'Trouve le nombre manquant dans la suite : 28, 29, [?], 31, 32 !' },
+          trainData: {
+            sequence: ['28', '29', '?', '31', '32'],
+            missingIndex: 2,
+            options: ['30', '35', '40'],
+            correct: '30'
+          }
+        }
+      }
+    ]
+  },
+
+  // CHAPITRE 8 : L'ATELIER D'ÉCRITURE MANUSCRITE CURSIVE (CP)
+  {
+    id: 'chap_8',
+    number: 8,
+    subject: 'lecture',
+    title: { fr: 'Atelier d’Écriture Manuscrite Cursive', moore: 'Seb-biis sɛbgo', dioula: 'Sɛbɛnni kurisiwu' },
+    description: { fr: 'Apprends l’écriture attachée d’écolier avec les lignes Seyès de cahier CP !', moore: 'Sɛb sõama', dioula: 'Kalan kɛ sɛbɛnni cɛcɛlen na' },
+    badgeEmoji: '✍️',
+    iconSvg: 'pencil',
+    colorScheme: {
+      primary: '#4F46E5',
+      secondary: '#EEF2FF',
+      accent: '#F59E0B',
+      bgPattern: 'bg-[#F5F3FF]',
+    },
+    stickerReward: {
+      id: 'stk_master_pen',
+      title: { fr: 'Plume d’Or d’Écriture', moore: 'Seb-biis bãngda', dioula: 'Sɛbɛnnikɛla fari' },
+      svg: 'alphabet_medal'
+    },
+    pages: [
+      // Page 46 : L'Atelier d'écriture cursive et les 3 écritures
+      {
+        id: 'p_8_1',
+        pageNumber: 46,
+        chapterId: 'chap_8',
+        title: { fr: 'Les 3 Écritures CP (Capitale, Scripte, Cursive)', moore: 'Sɛb-buud a 3', dioula: 'Sɛbɛn sugu 3' },
+        instruction: { fr: 'Découvre la Capitale, la Scripte et la belle Cursive attachée d’écolier ! Trace au doigt sur les lignes Seyès !', moore: 'Gese sɛb-buud', dioula: 'Sɛbɛn sugu lajɛ' },
+        activity: {
+          type: 'cursive_atelier',
+          prompt: { fr: 'Choisis une lettre et trace-la en écriture cursive attachée !' }
+        }
+      },
+      // Page 47 : Les grandes boucles et liaisons cursives
+      {
+        id: 'p_8_2',
+        pageNumber: 47,
+        chapterId: 'chap_8',
+        title: { fr: 'Tracer les Boucles Cursives (l, b, h, k)', moore: 'Boucles sɛbgo', dioula: 'Kurunw sɛbɛnni' },
+        instruction: { fr: 'La boucle monte jusqu’au ciel (3e interligne) et redescend bien droite ! Entraîne-toi au doigt !', moore: 'Gese boucles', dioula: 'Kurunw cɛcɛlen' },
+        activity: {
+          type: 'cursive_atelier',
+          prompt: { fr: 'Entraîne-toi à tracer les lettres à grandes boucles (l, b, h, k) !' }
+        }
+      },
+      // Page 48 : Les lettres rondes cursives (a, c, d, o, x)
+      {
+        id: 'p_8_3',
+        pageNumber: 48,
+        chapterId: 'chap_8',
+        title: { fr: 'Les Lettres Rondes Cursives (a, c, d, o, x)', moore: 'Rondes sɛbgo', dioula: 'Sɛbɛnden kulunw' },
+        instruction: { fr: 'On part toujours du premier interligne et on tourne vers la gauche comme un croissant de lune !', moore: 'Gese rondes', dioula: 'Kulunw lajɛ' },
+        activity: {
+          type: 'cursive_atelier',
+          prompt: { fr: 'Trace les lettres rondes : a, c, d, o, x sur le cahier d’écolier !' }
+        }
+      },
+      // Page 49 : Les lettres qui plongent sous terre (g, j, p, q, y, z)
+      {
+        id: 'p_8_4',
+        pageNumber: 49,
+        chapterId: 'chap_8',
+        title: { fr: 'Les Lettres sous la Ligne (g, j, p, q, y, z)', moore: 'Tẽnga gom-biisi', dioula: 'Duguma sɛbɛndenw' },
+        instruction: { fr: 'Ces lettres plongent sous la ligne violette de 2 interlignes ! Fais la boucle et remonte !', moore: 'Tẽnga boucles', dioula: 'Jigili duguma' },
+        activity: {
+          type: 'cursive_atelier',
+          prompt: { fr: 'Trace les lettres à queue qui plongent sous la terre !' }
+        }
+      }
+    ]
   }
 ];
 
@@ -920,7 +1087,7 @@ export const PACK_CONTES_LOCAL: ContentPack = {
   chapters: [
     {
       id: 'chap_pack_1',
-      number: 5,
+      number: 9,
       subject: 'conte',
       title: { fr: 'Le Lièvre et le Petit Mouton', moore: 'Soamba la Pe-biiga', dioula: 'Sounsounba ni Sagadɛn' },
       description: { fr: 'Conte traditionnel d’amitié et de partage au clair de lune.', moore: 'Solma sõama', dioula: 'Nsiirin cɛkɔrɔba' },
@@ -940,7 +1107,7 @@ export const PACK_CONTES_LOCAL: ContentPack = {
       pages: [
         {
           id: 'p_pack_1',
-          pageNumber: 42,
+          pageNumber: 50,
           chapterId: 'chap_pack_1',
           title: { fr: 'Le Lièvre et l’Arbre Enchanté', moore: 'Tiig waoongo', dioula: 'Yiri nsiirin' },
           instruction: { fr: 'Écoute l’histoire du petit lièvre malin qui adorait lire sous le grand baobab.', moore: 'Karem kibare', dioula: 'Kuma mɛn' },
@@ -968,4 +1135,6 @@ export const STICKERS_CATALOG = [
   { id: 'stk_hare_sheep', name: 'Lièvre Rusé', icon: 'hare_avatar', color: '#3B82F6' },
   { id: 'stk_chick_hero', name: 'Poussin Courageux', icon: 'chick', color: '#EAB308' },
   { id: 'stk_alphabet_champion', name: 'Roi de l’Alphabet', icon: 'alphabet_medal', color: '#F59E0B' },
+  { id: 'stk_fifty_coins', name: 'Trésor des 50 Nombres', icon: 'coin', color: '#0D9488' },
+  { id: 'stk_master_pen', name: 'Plume d’Écriture Cursive', icon: 'alphabet_medal', color: '#4F46E5' },
 ];

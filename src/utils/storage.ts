@@ -29,13 +29,24 @@ function safeSetItem(key: string, value: string): void {
   memoryStore[key] = value;
 }
 
+export const ALL_DEFAULT_CHAPTER_IDS = [
+  'chap_1',
+  'chap_2',
+  'chap_3',
+  'chap_4',
+  'chap_5',
+  'chap_6',
+  'chap_7',
+  'chap_8',
+];
+
 export const DEFAULT_PROFILES: ChildProfile[] = [
   {
     id: 'p_awa',
     name: 'Awa',
     avatar: 'gazelle',
     starsCount: 3,
-    unlockedChapters: ['chap_1', 'chap_2', 'chap_4', 'chap_5', 'chap_6'],
+    unlockedChapters: ['chap_1', 'chap_2', 'chap_3', 'chap_4', 'chap_5', 'chap_6', 'chap_7', 'chap_8'],
     completedPages: { 'p_1_1': true, 'p_1_2': true },
     stickersEarned: ['stk_kalo_star', 'stk_mango_gold'],
     placedStickers: [
@@ -50,7 +61,7 @@ export const DEFAULT_PROFILES: ChildProfile[] = [
     name: 'Issa',
     avatar: 'lionceau',
     starsCount: 1,
-    unlockedChapters: ['chap_1', 'chap_5', 'chap_6'],
+    unlockedChapters: ['chap_1', 'chap_2', 'chap_3', 'chap_4', 'chap_5', 'chap_6', 'chap_7', 'chap_8'],
     completedPages: {},
     stickersEarned: ['stk_kalo_star'],
     placedStickers: [],
@@ -64,7 +75,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   voiceEnabled: true,
   bilingualLanguage: 'none',
   sessionTimeLimitEnabled: true,
-  allChaptersUnlocked: false,
+  allChaptersUnlocked: true,
   fontType: 'script',
 };
 

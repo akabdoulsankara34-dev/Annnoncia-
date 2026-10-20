@@ -82,9 +82,9 @@ export const SvgIcons = {
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <defs>
         <radialGradient id="mangoGlow" cx="40%" cy="35%" r="65%">
-          <stop offset="0%" stop-color="#FFE853" />
-          <stop offset="55%" stop-color="#FFA41C" />
-          <stop offset="100%" stop-color="#E84820" />
+          <stop offset="0%" stopColor="#FFE853" />
+          <stop offset="55%" stopColor="#FFA41C" />
+          <stop offset="100%" stopColor="#E84820" />
         </radialGradient>
       </defs>
       <ellipse cx="50" cy="90" rx="30" ry="6" fill="#000000" fillOpacity="0.15" />
@@ -104,9 +104,9 @@ export const SvgIcons = {
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <defs>
         <radialGradient id="calabashGrad" cx="45%" cy="40%" r="60%">
-          <stop offset="0%" stop-color="#F2D7A1" />
-          <stop offset="70%" stop-color="#C68B45" />
-          <stop offset="100%" stop-color="#8A501F" />
+          <stop offset="0%" stopColor="#F2D7A1" />
+          <stop offset="70%" stopColor="#C68B45" />
+          <stop offset="100%" stopColor="#8A501F" />
         </radialGradient>
       </defs>
       <ellipse cx="50" cy="88" rx="34" ry="7" fill="#000000" fillOpacity="0.15" />

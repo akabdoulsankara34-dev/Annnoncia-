@@ -44,6 +44,14 @@ export default function App() {
   const [showParentModal, setShowParentModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  };
 
   const activeProfile = profiles.find(p => p.id === activeProfileId) || profiles[0];
 
@@ -112,7 +120,55 @@ export default function App() {
       reviewQueue: [],
       lastPageVisited: 1,
     }));
-    alert('Progression réinitialisée avec succès !');
+    showToast('Progression réinitialisée avec succès !');
+  };
+
+  const handleUnlockChapter = (chapterId: string) => {
+    handleUpdateProfile(prev => ({
+      ...prev,
+      unlockedChapters: Array.from(new Set([...prev.unlockedChapters, chapterId])),
+    }));
+    const chap = chaptersList.find(c => c.id === chapterId);
+    showToast(`🔓 Chapitre ${chap?.number || ''} « ${chap?.title.fr || ''} » débloqué !`);
+    sound.playStarReward();
+  };
+
+  const handleToggleChapterUnlock = (chapterId: string) => {
+    const isCurrentlyUnlocked = settings.allChaptersUnlocked || activeProfile.unlockedChapters.includes(chapterId);
+
+    if (settings.allChaptersUnlocked) {
+      const remaining = chaptersList.map(c => c.id).filter(id => id !== chapterId);
+      handleUpdateSettings({ ...settings, allChaptersUnlocked: false });
+      handleUpdateProfile(prev => ({
+        ...prev,
+        unlockedChapters: remaining.length > 0 ? remaining : ['chap_1'],
+      }));
+      const chap = chaptersList.find(c => c.id === chapterId);
+      showToast(`🔒 Chapitre ${chap?.number || ''} verrouillé.`);
+      sound.playPop();
+      return;
+    }
+
+    if (isCurrentlyUnlocked) {
+      handleUpdateProfile(prev => {
+        const nextList = prev.unlockedChapters.filter(id => id !== chapterId);
+        return {
+          ...prev,
+          unlockedChapters: nextList.length > 0 ? nextList : ['chap_1'],
+        };
+      });
+      const chap = chaptersList.find(c => c.id === chapterId);
+      showToast(`🔒 Chapitre ${chap?.number || ''} verrouillé.`);
+      sound.playPop();
+    } else {
+      handleUpdateProfile(prev => ({
+        ...prev,
+        unlockedChapters: Array.from(new Set([...prev.unlockedChapters, chapterId])),
+      }));
+      const chap = chaptersList.find(c => c.id === chapterId);
+      showToast(`🔓 Chapitre ${chap?.number || ''} « ${chap?.title.fr || ''} » débloqué !`);
+      sound.playStarReward();
+    }
   };
 
   const handleUnlockAllChapters = () => {
@@ -122,7 +178,25 @@ export default function App() {
       unlockedChapters: allChapIds,
     }));
     handleUpdateSettings({ ...settings, allChaptersUnlocked: true });
-    alert('Tous les chapitres sont désormais accessibles !');
+    showToast('🎉 Tous les chapitres sont désormais débloqués !');
+    sound.playSuccess();
+  };
+
+  const handleToggleAllChaptersUnlocked = () => {
+    const nextVal = !settings.allChaptersUnlocked;
+    handleUpdateSettings({ ...settings, allChaptersUnlocked: nextVal });
+    if (nextVal) {
+      const allChapIds = chaptersList.map(c => c.id);
+      handleUpdateProfile(prev => ({
+        ...prev,
+        unlockedChapters: allChapIds,
+      }));
+      showToast('🔓 Mode Libre : tous les chapitres sont ouverts !');
+      sound.playSuccess();
+    } else {
+      showToast('🔒 Mode Guidé : progression étape par étape.');
+      sound.playPop();
+    }
   };
 
   const handleImportPack = (pack: ContentPack) => {
@@ -218,9 +292,14 @@ export default function App() {
             chapters={chaptersList}
             unlockedChapters={settings.allChaptersUnlocked ? chaptersList.map(c => c.id) : activeProfile.unlockedChapters}
             starsCount={activeProfile.starsCount}
+            allChaptersUnlocked={settings.allChaptersUnlocked}
             onSelectChapter={handleSelectChapterFromContents}
             onBackToCover={() => setView('cover')}
             onOpenStickerAlbum={() => setShowStickerModal(true)}
+            onUnlockChapter={handleUnlockChapter}
+            onToggleChapterUnlock={handleToggleChapterUnlock}
+            onUnlockAllChapters={handleUnlockAllChapters}
+            onToggleAllChaptersUnlocked={handleToggleAllChaptersUnlocked}
           />
         )}
 
@@ -287,6 +366,8 @@ export default function App() {
           chapters={chaptersList}
           onUpdateSettings={handleUpdateSettings}
           onResetProgress={handleResetProgress}
+          onUnlockChapter={handleUnlockChapter}
+          onToggleChapterUnlock={handleToggleChapterUnlock}
           onUnlockAllChapters={handleUnlockAllChapters}
           onImportPack={handleImportPack}
           onClose={() => setShowParentModal(false)}
@@ -298,6 +379,14 @@ export default function App() {
         <OfflineStandaloneExporter
           onClose={() => setShowExportModal(false)}
         />
+      )}
+
+      {/* Notification Toast douce et bienveillante */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900/95 text-white px-5 py-3 rounded-2xl shadow-2xl border-2 border-amber-400 font-extrabold text-sm sm:text-base flex items-center gap-3 animate-bounce">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+          <span>{toastMessage}</span>
+        </div>
       )}
     </div>
   );

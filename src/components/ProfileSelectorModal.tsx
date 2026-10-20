@@ -24,6 +24,7 @@ export const ProfileSelectorModal: React.FC<ProfileSelectorModalProps> = ({
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState<ChildProfile['avatar']>('gazelle');
+  const [deletingProfileId, setDeletingProfileId] = useState<string | null>(null);
 
   const avatarChoices: { id: ChildProfile['avatar']; label: string }[] = [
     { id: 'gazelle', label: 'Gazelle' },
@@ -111,18 +112,43 @@ export const ProfileSelectorModal: React.FC<ProfileSelectorModalProps> = ({
                     </div>
 
                     {profiles.length > 1 && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm(`Supprimer le profil de ${p.name} ?`)) {
-                            onDeleteProfile(p.id);
-                          }
-                        }}
-                        className="mt-2 text-slate-400 hover:text-rose-500 p-1 transition"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+                        {deletingProfileId === p.id ? (
+                          <div className="flex items-center gap-1 bg-rose-50 border border-rose-200 p-1 rounded-lg">
+                            <span className="text-[10px] font-bold text-rose-700">Supprimer ?</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteProfile(p.id);
+                                setDeletingProfileId(null);
+                              }}
+                              className="px-1.5 py-0.5 rounded bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold"
+                            >
+                              Oui
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeletingProfileId(null);
+                              }}
+                              className="px-1.5 py-0.5 rounded bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-bold"
+                            >
+                              Non
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeletingProfileId(p.id);
+                            }}
+                            className="text-slate-400 hover:text-rose-500 p-1 transition"
+                            title="Supprimer ce profil"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 );

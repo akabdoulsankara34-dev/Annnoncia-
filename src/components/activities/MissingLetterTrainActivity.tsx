@@ -22,6 +22,9 @@ export const MissingLetterTrainActivity: React.FC<MissingLetterTrainActivityProp
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
 
+  const isNumber = !isNaN(Number(correct));
+  const itemTypeLabel = isNumber ? 'le nombre' : 'la lettre';
+
   const handleChoose = (opt: string) => {
     if (isCompleted) return;
     setSelectedChoice(opt);
@@ -29,11 +32,11 @@ export const MissingLetterTrainActivity: React.FC<MissingLetterTrainActivityProp
     if (opt.toUpperCase() === correct.toUpperCase()) {
       setIsCompleted(true);
       sound.playSuccess();
-      speakText(`Bravo ! C’est bien la lettre ${correct} qui monte dans le wagon !`);
+      speakText(`Bravo ! C’est bien ${itemTypeLabel} ${correct} qui monte dans le wagon !`);
       setTimeout(onSuccess, 800);
     } else {
       sound.playGentleEncouragement();
-      speakText(`Ce n’est pas la lettre ${opt}. Recommence !`);
+      speakText(`Ce n’est pas ${itemTypeLabel} ${opt}. Recommence !`);
       onMistake();
       setTimeout(() => setSelectedChoice(null), 1200);
     }
@@ -44,11 +47,13 @@ export const MissingLetterTrainActivity: React.FC<MissingLetterTrainActivityProp
       {/* En-tête train */}
       <div className="flex items-center gap-2 mb-3 px-4 py-1.5 rounded-full bg-blue-100 text-blue-900 font-extrabold text-sm">
         <Train className="w-5 h-5 text-blue-600" />
-        <span>Le Train de l'Alphabet</span>
+        <span>{isNumber ? 'Le Train des Nombres' : "Le Train de l'Alphabet"}</span>
       </div>
 
       <p className="text-slate-700 font-extrabold text-base mb-4 text-center">
-        Quelle lettre manque-t-il dans le wagon avec le point d'interrogation ?
+        {isNumber 
+          ? "Quel nombre manque-t-il dans le wagon avec le point d'interrogation ?"
+          : "Quelle lettre manque-t-il dans le wagon avec le point d'interrogation ?"}
       </p>
 
       {/* Les wagons du train de l'alphabet */}

@@ -10,6 +10,7 @@ import {
   FolderPlus, 
   RotateCcw, 
   Unlock, 
+  Lock,
   Volume2, 
   VolumeX, 
   Clock, 
@@ -27,6 +28,8 @@ interface ParentSpaceModalProps {
   chapters: Chapter[];
   onUpdateSettings: (newSettings: AppSettings) => void;
   onResetProgress: (profileId: string) => void;
+  onUnlockChapter?: (chapterId: string) => void;
+  onToggleChapterUnlock?: (chapterId: string) => void;
   onUnlockAllChapters: () => void;
   onImportPack: (pack: ContentPack) => void;
   onClose: () => void;
@@ -39,6 +42,8 @@ export const ParentSpaceModal: React.FC<ParentSpaceModalProps> = ({
   chapters,
   onUpdateSettings,
   onResetProgress,
+  onUnlockChapter,
+  onToggleChapterUnlock,
   onUnlockAllChapters,
   onImportPack,
   onClose,
@@ -81,6 +86,9 @@ export const ParentSpaceModal: React.FC<ParentSpaceModalProps> = ({
     downloadAnchor.remove();
   };
 
+  const [importFeedback, setImportFeedback] = useState<{ msg: string; success: boolean } | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -91,12 +99,21 @@ export const ParentSpaceModal: React.FC<ParentSpaceModalProps> = ({
         const parsed = JSON.parse(event.target?.result as string);
         if (parsed.packId && parsed.chapters && Array.isArray(parsed.chapters)) {
           onImportPack(parsed);
-          alert(`Pack « ${parsed.title} » importé avec succès (${parsed.chapters.length} chapitres ajoutés) !`);
+          setImportFeedback({
+            msg: `Pack « ${parsed.title} » importé avec succès (${parsed.chapters.length} chapitres ajoutés) !`,
+            success: true
+          });
         } else {
-          alert('Le fichier JSON ne respecte pas le format de pack attendu.');
+          setImportFeedback({
+            msg: 'Le fichier JSON ne respecte pas le format de pack attendu.',
+            success: false
+          });
         }
       } catch (err) {
-        alert('Erreur lors de la lecture du fichier JSON.');
+        setImportFeedback({
+          msg: 'Erreur lors de la lecture du fichier JSON.',
+          success: false
+        });
       }
     };
     reader.readAsText(file);
@@ -225,19 +242,61 @@ export const ParentSpaceModal: React.FC<ParentSpaceModalProps> = ({
                       </span>
                     </div>
 
-                    <div className="space-y-2 mt-3">
+                    <div className="flex items-center justify-between mt-3 mb-2 pt-2 border-t border-slate-100">
+                      <span className="text-xs font-black text-slate-700">Gestion manuelle des chapitres :</span>
+                      <button
+                        onClick={onUnlockAllChapters}
+                        className="px-2.5 py-1 rounded-xl bg-amber-400 hover:bg-amber-500 text-amber-950 font-black text-xs flex items-center gap-1 shadow-xs transition active:scale-95 cursor-pointer"
+                      >
+                        <Unlock className="w-3.5 h-3.5" />
+                        <span>Tout débloquer</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-2 mt-2">
                       {chapters.map((chap) => {
                         const totalPages = chap.pages.length;
                         const doneCount = chap.pages.filter(p => activeProfile.completedPages[p.id]).length;
                         const pct = Math.round((doneCount / totalPages) * 100);
+                        const isChapUnlocked = settings.allChaptersUnlocked || activeProfile.unlockedChapters.includes(chap.id);
 
                         return (
                           <div key={chap.id} className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                             <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1">
-                              <span>Chapitre {chap.number} : {chap.title.fr}</span>
-                              <span>{doneCount} / {totalPages} pages ({pct}%)</span>
+                              <span className="truncate pr-2">Chapitre {chap.number} : {chap.title.fr}</span>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span>{doneCount}/{totalPages} ({pct}%)</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (onToggleChapterUnlock) {
+                                      onToggleChapterUnlock(chap.id);
+                                    } else if (onUnlockChapter) {
+                                      onUnlockChapter(chap.id);
+                                    }
+                                  }}
+                                  className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition flex items-center gap-1 cursor-pointer ${
+                                    isChapUnlocked
+                                      ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'
+                                      : 'bg-amber-300 text-amber-950 hover:bg-amber-400 border border-amber-400'
+                                  }`}
+                                  title={isChapUnlocked ? 'Cliquer pour verrouiller' : 'Cliquer pour débloquer manuellement'}
+                                >
+                                  {isChapUnlocked ? (
+                                    <>
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                      <span>Débloqué</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Unlock className="w-3 h-3" />
+                                      <span>Débloquer</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
                             </div>
-                            <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                               <div
                                 className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                                 style={{ width: `${pct}%` }}
@@ -329,6 +388,16 @@ export const ParentSpaceModal: React.FC<ParentSpaceModalProps> = ({
                         />
                       </label>
                     </div>
+
+                    {importFeedback && (
+                      <div className={`mt-3 p-3 rounded-xl text-xs font-bold ${
+                        importFeedback.success 
+                          ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' 
+                          : 'bg-rose-100 text-rose-900 border border-rose-300'
+                      }`}>
+                        {importFeedback.msg}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -402,35 +471,62 @@ export const ParentSpaceModal: React.FC<ParentSpaceModalProps> = ({
                   </div>
 
                   {/* Débloquer tous les chapitres */}
-                  <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200">
                     <div>
                       <span className="text-sm font-bold text-slate-800 block">Accès libre à tous les chapitres</span>
-                      <span className="text-xs text-slate-500">Pour naviguer sans obligation de valider dans l'ordre</span>
+                      <span className="text-xs text-slate-500">Permet d'accéder à tous les chapitres sans blocage séquentiel</span>
                     </div>
-                    <button
-                      onClick={onUnlockAllChapters}
-                      className="px-3 py-1.5 rounded-xl bg-amber-400 text-amber-950 font-black text-xs hover:bg-amber-500 transition"
-                    >
-                      Tout débloquer
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => onUpdateSettings({ ...settings, allChaptersUnlocked: !settings.allChaptersUnlocked })}
+                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer ${
+                          settings.allChaptersUnlocked ? 'bg-emerald-500 text-white shadow-xs' : 'bg-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {settings.allChaptersUnlocked ? '✓ Mode libre (Ouvert)' : 'Mode guidé'}
+                      </button>
+                      <button
+                        onClick={onUnlockAllChapters}
+                        className="px-3 py-1.5 rounded-xl bg-amber-400 text-amber-950 font-black text-xs hover:bg-amber-500 transition shadow-xs cursor-pointer"
+                        title="Débloquer tous les chapitres manuellement pour l'élève"
+                      >
+                        Tout débloquer
+                      </button>
+                    </div>
                   </div>
 
                   {/* Réinitialiser la progression */}
-                  <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-rose-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white p-3 rounded-xl border border-rose-200">
                     <div>
                       <span className="text-sm font-bold text-rose-700 block">Réinitialiser l'élève {activeProfile.name}</span>
                       <span className="text-xs text-slate-500">Remet les étoiles et les pages à zéro</span>
                     </div>
-                    <button
-                      onClick={() => {
-                        if (confirm(`Voulez-vous vraiment effacer la progression de ${activeProfile.name} ?`)) {
-                          onResetProgress(activeProfile.id);
-                        }
-                      }}
-                      className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 font-bold text-xs hover:bg-rose-100 transition"
-                    >
-                      Réinitialiser
-                    </button>
+                    {showResetConfirm ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            onResetProgress(activeProfile.id);
+                            setShowResetConfirm(false);
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 transition"
+                        >
+                          Oui, effacer
+                        </button>
+                        <button
+                          onClick={() => setShowResetConfirm(false)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-300 transition"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowResetConfirm(true)}
+                        className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 font-bold text-xs hover:bg-rose-100 transition"
+                      >
+                        Réinitialiser
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

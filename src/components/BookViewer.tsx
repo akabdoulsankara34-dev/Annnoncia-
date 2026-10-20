@@ -14,6 +14,9 @@ import { LetterHuntActivity } from './activities/LetterHuntActivity';
 import { CaseSorterActivity } from './activities/CaseSorterActivity';
 import { AlphabetChartActivity } from './activities/AlphabetChartActivity';
 import { DragDropCaseActivity } from './activities/DragDropCaseActivity';
+import { CountTo50Activity } from './activities/CountTo50Activity';
+import { TensAndUnitsActivity } from './activities/TensAndUnitsActivity';
+import { CursiveManuscritActivity } from './activities/CursiveManuscritActivity';
 import { SvgIcons } from './SvgIcons';
 import { sound, speakText } from '../utils/audio';
 import { 
@@ -605,6 +608,31 @@ export const BookViewer: React.FC<BookViewerProps> = ({
                 pairs={activityToRender.dragDropCaseData.pairs}
                 onSuccess={handleActivitySuccess}
                 onMistake={handleActivityMistake}
+              />
+            )}
+
+            {activityToRender.type === 'count_to_50' && (
+              <CountTo50Activity
+                targetFind={activityToRender.countTo50Data?.targetFind || 34}
+                onSuccess={handleActivitySuccess}
+                onMistake={handleActivityMistake}
+              />
+            )}
+
+            {activityToRender.type === 'tens_units' && activityToRender.tensUnitsData && (
+              <TensAndUnitsActivity
+                tens={activityToRender.tensUnitsData.tens}
+                units={activityToRender.tensUnitsData.units}
+                itemName={activityToRender.tensUnitsData.itemName}
+                itemType={activityToRender.tensUnitsData.itemType}
+                onSuccess={handleActivitySuccess}
+                onMistake={handleActivityMistake}
+              />
+            )}
+
+            {activityToRender.type === 'cursive_atelier' && (
+              <CursiveManuscritActivity
+                onSuccess={handleActivitySuccess}
               />
             )}
           </div>

@@ -25,7 +25,10 @@ export type ActivityType =
   | 'letter_hunt'
   | 'case_sorter'
   | 'alphabet_interactive_chart'
-  | 'drag_drop_case';
+  | 'drag_drop_case'
+  | 'count_to_50'
+  | 'tens_units'
+  | 'cursive_atelier';
 
 export interface ActivityData {
   type: ActivityType;
@@ -110,6 +113,28 @@ export interface ActivityData {
   };
   dragDropCaseData?: {
     pairs: { id: string; upper: string; lower: string; word?: string }[];
+  };
+  countTo50Data?: {
+    start: number;
+    end: number;
+    targetFind?: number;
+    mode?: 'explore' | 'find' | 'count_tens';
+  };
+  tensUnitsData?: {
+    tens: number;
+    units: number;
+    itemName: MultilingualText;
+    itemType: 'mango' | 'coin' | 'calabash';
+  };
+  cursiveData?: {
+    letters: {
+      char: string;
+      capital: string;
+      script: string;
+      cursive: string;
+      word: string;
+      strokeInstruction: string;
+    }[];
   };
 }
 

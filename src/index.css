@@ -90,6 +90,24 @@
   animation: kaloHappyWiggle 1.2s ease-in-out infinite;
 }
 
+/* Écriture manuscrite / cursive d'écolier CP */
+.font-manuscrit {
+  font-family: 'Caveat', 'Dancing Script', 'Brush Script MT', 'Comic Sans MS', cursive;
+  font-style: italic;
+  letter-spacing: 0.05em;
+}
+
+/* Réglure Seyès de cahier CP (lignes d'écriture d'écolier) */
+.cahier-seyes {
+  background-color: #FFFFFF;
+  background-image: 
+    linear-gradient(to right, rgba(239, 68, 68, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, #93C5FD 1px, transparent 1px),
+    linear-gradient(to bottom, #DBEAFE 1px, transparent 1px);
+  background-size: 100% 100%, 100% 32px, 100% 8px;
+  background-position: 40px 0, 0 0, 0 0;
+}
+
 /* Print Styles for parent worksheets */
 @media print {
   body {
