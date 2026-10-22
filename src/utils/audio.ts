@@ -194,6 +194,19 @@ class SoundEngine {
 
 export const sound = new SoundEngine();
 
+let globalVoiceEnabled = true;
+
+export function setVoiceEnabled(enabled: boolean) {
+  globalVoiceEnabled = enabled;
+  if (!enabled) {
+    stopSpeaking();
+  }
+}
+
+export function isVoiceEnabled(): boolean {
+  return globalVoiceEnabled;
+}
+
 /**
  * Synthèse Vocale (Web Speech API) en français
  */
@@ -202,12 +215,18 @@ export function speakText(
   options?: { 
     rate?: number; 
     pitch?: number; 
+    force?: boolean;
     onStart?: () => void; 
     onEnd?: () => void; 
     onBoundary?: (charIndex: number) => void;
   }
 ): boolean {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    return false;
+  }
+
+  // Respecte le réglage de désactivation de la voix
+  if (!globalVoiceEnabled && !options?.force) {
     return false;
   }
 

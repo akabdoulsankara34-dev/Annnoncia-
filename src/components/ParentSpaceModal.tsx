@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChildProfile, AppSettings, Chapter, ContentPack } from '../types/book';
 import { PACK_CONTES_LOCAL } from '../data/bookContent';
-import { sound } from '../utils/audio';
+import { sound, speakText, stopSpeaking } from '../utils/audio';
 import { 
   X, 
   ShieldCheck, 
@@ -433,19 +433,27 @@ export const ParentSpaceModal: React.FC<ParentSpaceModalProps> = ({
               {/* ONGLET 4 : RÉGLAGES */}
               {activeTab === 'settings' && (
                 <div className="flex flex-col gap-3">
-                  {/* Synthèse vocale */}
+                  {/* Synthèse vocale (Web Speech API) */}
                   <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
                     <div>
-                      <span className="text-sm font-bold text-slate-800 block">Lecture à voix haute (SpeechSynthesis)</span>
-                      <span className="text-xs text-slate-500">Kalo lit les consignes et les mots</span>
+                      <span className="text-sm font-bold text-slate-800 block">Lecture à voix haute (Web Speech API)</span>
+                      <span className="text-xs text-slate-500">Lecture vocale des pages, titres, consignes et histoires</span>
                     </div>
                     <button
-                      onClick={() => onUpdateSettings({ ...settings, voiceEnabled: !settings.voiceEnabled })}
-                      className={`px-3 py-1.5 rounded-xl font-bold text-xs ${
-                        settings.voiceEnabled ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'
+                      onClick={() => {
+                        const nextVoice = !settings.voiceEnabled;
+                        onUpdateSettings({ ...settings, voiceEnabled: nextVoice });
+                        if (nextVoice) {
+                          speakText("Synthèse vocale activée !", { force: true });
+                        } else {
+                          stopSpeaking();
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-xl font-black text-xs transition cursor-pointer shadow-xs ${
+                        settings.voiceEnabled ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-600'
                       }`}
                     >
-                      {settings.voiceEnabled ? 'Activé' : 'Désactivé'}
+                      {settings.voiceEnabled ? 'Activée' : 'Désactivée'}
                     </button>
                   </div>
 

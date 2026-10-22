@@ -14,7 +14,7 @@ import {
   resolveMistake,
   DEFAULT_PROFILES
 } from './utils/storage';
-import { sound } from './utils/audio';
+import { sound, setVoiceEnabled } from './utils/audio';
 
 import { BookCover } from './components/BookCover';
 import { TableOfContents } from './components/TableOfContents';
@@ -61,10 +61,11 @@ export default function App() {
   // Calculer toutes les pages du livre
   const allPages: BookPage[] = chaptersList.flatMap(c => c.pages);
 
-  // Synchroniser le paramètre audio
+  // Synchroniser les paramètres audio et voix
   useEffect(() => {
     sound.setSoundEnabled(settings.soundEnabled);
-  }, [settings.soundEnabled]);
+    setVoiceEnabled(settings.voiceEnabled);
+  }, [settings.soundEnabled, settings.voiceEnabled]);
 
   // Gestion du profil actif
   const handleSelectProfile = (id: string) => {
@@ -325,6 +326,7 @@ export default function App() {
             initialPageNumber={targetPageNumber}
             activeProfile={activeProfile}
             settings={settings}
+            onUpdateSettings={handleUpdateSettings}
             onUpdateProfile={handleUpdateProfile}
             onReturnToContents={() => setView('contents')}
             onOpenStickerAlbum={() => setShowStickerModal(true)}

@@ -18,7 +18,7 @@ import { CountTo50Activity } from './activities/CountTo50Activity';
 import { TensAndUnitsActivity } from './activities/TensAndUnitsActivity';
 import { CursiveManuscritActivity } from './activities/CursiveManuscritActivity';
 import { SvgIcons } from './SvgIcons';
-import { sound, speakText } from '../utils/audio';
+import { sound, speakText, stopSpeaking, setVoiceEnabled } from '../utils/audio';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -26,6 +26,7 @@ import {
   List, 
   Volume2, 
   VolumeX, 
+  Square,
   Sparkles, 
   Award, 
   Clock,
@@ -38,6 +39,7 @@ interface BookViewerProps {
   initialPageNumber?: number;
   activeProfile: ChildProfile;
   settings: AppSettings;
+  onUpdateSettings?: (newSettings: AppSettings) => void;
   onUpdateProfile: (updater: (prev: ChildProfile) => ChildProfile) => void;
   onReturnToContents: () => void;
   onOpenStickerAlbum: () => void;
@@ -50,6 +52,7 @@ export const BookViewer: React.FC<BookViewerProps> = ({
   initialPageNumber = 1,
   activeProfile,
   settings,
+  onUpdateSettings,
   onUpdateProfile,
   onReturnToContents,
   onOpenStickerAlbum,
@@ -93,6 +96,80 @@ export const BookViewer: React.FC<BookViewerProps> = ({
 
     return () => clearTimeout(timer);
   }, [settings.sessionTimeLimitEnabled]);
+
+  const [isReadingPage, setIsReadingPage] = useState(false);
+
+  // Lecture vocale automatique de la page si activée dans les réglages
+  useEffect(() => {
+    stopSpeaking();
+    setIsReadingPage(false);
+
+    if (settings.voiceEnabled && currentPage) {
+      const timer = setTimeout(() => {
+        speakText(`${currentPage.title.fr}. ${currentPage.instruction.fr}`, {
+          rate: 0.86,
+          onStart: () => {
+            setIsReadingPage(true);
+            setGuideMood('talking');
+          },
+          onEnd: () => {
+            setIsReadingPage(false);
+            setGuideMood('happy');
+          }
+        });
+      }, 500);
+
+      return () => {
+        clearTimeout(timer);
+        stopSpeaking();
+      };
+    }
+  }, [currentPageIndex, settings.voiceEnabled]);
+
+  // Déclencher ou interrompre la lecture à haute voix de la page
+  const handleToggleReadPage = () => {
+    if (isReadingPage) {
+      stopSpeaking();
+      setIsReadingPage(false);
+      setGuideMood('happy');
+      return;
+    }
+
+    // Si la voix était coupée dans les réglages, on l'active
+    if (!settings.voiceEnabled) {
+      if (onUpdateSettings) {
+        onUpdateSettings({ ...settings, voiceEnabled: true });
+      }
+      setVoiceEnabled(true);
+    }
+
+    let textToRead = `${currentPage.title.fr}. ${currentPage.instruction.fr}. `;
+    if (activityToRender.sampleWord?.fr) {
+      textToRead += `Exemple : ${activityToRender.sampleWord.fr}. `;
+    }
+    if (activityToRender.type === 'letter_intro' && activityToRender.letter) {
+      textToRead += `La lettre ${activityToRender.letter}. `;
+    }
+    if (activityToRender.storySentences && activityToRender.storySentences.length > 0) {
+      textToRead += activityToRender.storySentences.map(s => s.text).join(' ');
+    }
+
+    setIsReadingPage(true);
+    setGuideMood('talking');
+
+    speakText(textToRead, {
+      rate: 0.85,
+      force: true,
+      onStart: () => {
+        setIsReadingPage(true);
+        setGuideMood('talking');
+      },
+      onEnd: () => {
+        setIsReadingPage(false);
+        setGuideMood('happy');
+      }
+    });
+  };
 
   // Tourner la page vers la suivante avec 3D animation et son
   const goToNextPage = () => {
@@ -259,7 +336,42 @@ export const BookViewer: React.FC<BookViewerProps> = ({
             <Award className="w-4 h-4" />
           </button>
 
-          {/* Toggle son */}
+          {/* Toggle Synthèse Vocale (Web Speech API) */}
+          <button
+            onClick={() => {
+              const nextVoice = !settings.voiceEnabled;
+              if (onUpdateSettings) {
+                onUpdateSettings({ ...settings, voiceEnabled: nextVoice });
+              }
+              setVoiceEnabled(nextVoice);
+              if (!nextVoice) {
+                stopSpeaking();
+                setIsReadingPage(false);
+              } else {
+                speakText("Lecture à voix haute activée !", { force: true });
+              }
+            }}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl font-black text-xs transition cursor-pointer border ${
+              settings.voiceEnabled 
+                ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-950 border-emerald-300' 
+                : 'bg-slate-200 hover:bg-slate-300 text-slate-600 border-slate-300'
+            }`}
+            title={settings.voiceEnabled ? "Désactiver la voix dans les réglages" : "Activer la voix dans les réglages"}
+          >
+            {settings.voiceEnabled ? (
+              <>
+                <Volume2 className="w-4 h-4 text-emerald-700" />
+                <span className="hidden sm:inline">Voix ON</span>
+              </>
+            ) : (
+              <>
+                <VolumeX className="w-4 h-4 text-rose-500" />
+                <span className="hidden sm:inline">Voix OFF</span>
+              </>
+            )}
+          </button>
+
+          {/* Toggle effets sonores */}
           <button
             onClick={() => {
               const next = !soundOn;
@@ -267,7 +379,7 @@ export const BookViewer: React.FC<BookViewerProps> = ({
               sound.setSoundEnabled(next);
             }}
             className="p-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 cursor-pointer transition"
-            title="Activer/Désactiver le son"
+            title="Activer/Désactiver les bruitages"
           >
             {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-rose-500" />}
           </button>
@@ -326,8 +438,16 @@ export const BookViewer: React.FC<BookViewerProps> = ({
                   </span>
                 )}
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">
-                {currentPage.title.fr}
+              <h2 
+                onClick={() => {
+                  sound.playPop();
+                  speakText(currentPage.title.fr, { force: true });
+                }}
+                className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight cursor-pointer hover:text-amber-800 transition flex items-center gap-2 group"
+                title="Touche pour écouter le titre"
+              >
+                <span>{currentPage.title.fr}</span>
+                <Volume2 className="w-4 h-4 text-amber-500 opacity-60 group-hover:opacity-100 transition shrink-0" />
               </h2>
               {getBilingualSubtitle(currentPage.title) && (
                 <p className="text-xs font-bold text-emerald-700 italic mt-0.5">
@@ -336,9 +456,35 @@ export const BookViewer: React.FC<BookViewerProps> = ({
               )}
             </div>
 
-            {/* Numéro de page officiel */}
-            <div className="w-10 h-10 rounded-full bg-amber-100 border-2 border-amber-300 text-amber-900 font-black text-sm flex items-center justify-center shrink-0">
-              {currentPage.pageNumber}
+            <div className="flex items-center gap-2">
+              {/* Bouton pour écouter toute la page */}
+              <button
+                onClick={handleToggleReadPage}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl font-['Fredoka',sans-serif] font-black text-xs sm:text-sm shadow-sm transition active:scale-95 cursor-pointer border ${
+                  isReadingPage 
+                    ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-600 animate-pulse' 
+                    : 'bg-amber-400 hover:bg-amber-500 text-amber-950 border-amber-300'
+                }`}
+                title="Lire toute la page à voix haute"
+              >
+                {isReadingPage ? (
+                  <>
+                    <Square className="w-3.5 h-3.5 fill-white" />
+                    <span>Arrêter</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-3.5 h-3.5 text-amber-950" />
+                    <span className="hidden xs:inline">Écouter</span>
+                    <span>la page</span>
+                  </>
+                )}
+              </button>
+
+              {/* Numéro de page officiel */}
+              <div className="w-10 h-10 rounded-full bg-amber-100 border-2 border-amber-300 text-amber-900 font-black text-sm flex items-center justify-center shrink-0">
+                {currentPage.pageNumber}
+              </div>
             </div>
           </div>
 
@@ -346,8 +492,9 @@ export const BookViewer: React.FC<BookViewerProps> = ({
           <div className="w-full my-2">
             <KaloGuide
               instructionText={currentPage.instruction.fr}
-              reactionMood={guideMood}
+              reactionMood={isReadingPage ? 'talking' : guideMood}
               voiceEnabled={settings.voiceEnabled}
+              autoSpeak={false}
               compact={false}
             />
           </div>
