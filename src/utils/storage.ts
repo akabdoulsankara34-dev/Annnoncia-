@@ -86,7 +86,25 @@ export function loadProfiles(): ChildProfile[] {
     return DEFAULT_PROFILES;
   }
   try {
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      saveProfiles(DEFAULT_PROFILES);
+      return DEFAULT_PROFILES;
+    }
+    return parsed.map((p, idx) => ({
+      id: p.id || `p_${idx}`,
+      name: p.name || 'Élève',
+      avatar: p.avatar || 'kalo',
+      starsCount: typeof p.starsCount === 'number' ? p.starsCount : 0,
+      unlockedChapters: Array.isArray(p.unlockedChapters) && p.unlockedChapters.length > 0
+        ? p.unlockedChapters 
+        : ALL_DEFAULT_CHAPTER_IDS,
+      completedPages: p.completedPages || {},
+      stickersEarned: Array.isArray(p.stickersEarned) ? p.stickersEarned : ['stk_kalo_star'],
+      placedStickers: Array.isArray(p.placedStickers) ? p.placedStickers : [],
+      reviewQueue: Array.isArray(p.reviewQueue) ? p.reviewQueue : [],
+      lastPageVisited: typeof p.lastPageVisited === 'number' ? p.lastPageVisited : 1,
+    }));
   } catch {
     return DEFAULT_PROFILES;
   }
@@ -162,7 +180,7 @@ export function saveSettings(settings: AppSettings): void {
  */
 export function recordMistake(type: 'letter' | 'syllable' | 'number' | 'addition', value: string) {
   updateActiveProfile(profile => {
-    const queue = [...profile.reviewQueue];
+    const queue = [...(profile.reviewQueue || [])];
     const existingIndex = queue.findIndex(item => item.type === type && item.value === value);
 
     if (existingIndex >= 0) {
@@ -189,7 +207,7 @@ export function resolveMistake(type: string, value: string) {
   updateActiveProfile(profile => {
     return {
       ...profile,
-      reviewQueue: profile.reviewQueue.filter(item => !(item.type === type && item.value === value))
+      reviewQueue: (profile.reviewQueue || []).filter(item => !(item.type === type && item.value === value))
     };
   });
 }

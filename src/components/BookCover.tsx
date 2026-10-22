@@ -9,6 +9,7 @@ interface BookCoverProps {
   onOpenBook: () => void;
   onOpenProfileSelect: () => void;
   onOpenParentSpace: () => void;
+  onOpenLireEtCompter?: () => void;
 }
 
 export const BookCover: React.FC<BookCoverProps> = ({
@@ -16,6 +17,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
   onOpenBook,
   onOpenProfileSelect,
   onOpenParentSpace,
+  onOpenLireEtCompter,
 }) => {
   const handleOpen = () => {
     sound.playPageFlip();
@@ -117,11 +119,21 @@ export const BookCover: React.FC<BookCoverProps> = ({
         </div>
       </div>
 
-      {/* Bouton discret d'accès à l'Espace Parent */}
-      <div className="mt-6 z-10">
+      {/* Boutons d'accès complémentaires */}
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-3 z-10 px-4">
+        {onOpenLireEtCompter && (
+          <button
+            onClick={onOpenLireEtCompter}
+            className="flex items-center gap-2 bg-[#C8372D] hover:bg-[#B02A20] text-white border-2 border-amber-300 font-black text-xs sm:text-sm py-2 px-4 rounded-full shadow-lg transition active:scale-95 cursor-pointer"
+          >
+            <span>🎒</span>
+            <span>Méthode 6-7 ans (4 semaines)</span>
+          </button>
+        )}
+
         <button
           onClick={onOpenParentSpace}
-          className="text-xs text-white/60 hover:text-white underline font-semibold transition cursor-pointer py-2 px-4 rounded-full hover:bg-white/10"
+          className="text-xs text-white/70 hover:text-white underline font-semibold transition cursor-pointer py-2 px-3 rounded-full hover:bg-white/10"
         >
           ⚙️ Espace Enseignants & Parents
         </button>

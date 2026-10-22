@@ -15,6 +15,7 @@ interface TableOfContentsProps {
   onToggleChapterUnlock?: (chapterId: string) => void;
   onUnlockAllChapters?: () => void;
   onToggleAllChaptersUnlocked?: () => void;
+  onOpenLireEtCompter?: () => void;
 }
 
 export const TableOfContents: React.FC<TableOfContentsProps> = ({
@@ -29,6 +30,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
   onToggleChapterUnlock,
   onUnlockAllChapters,
   onToggleAllChaptersUnlocked,
+  onOpenLireEtCompter,
 }) => {
   const areAllUnlocked = allChaptersUnlocked || chapters.every(c => unlockedChapters.includes(c.id));
 
@@ -70,6 +72,32 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
           Touche un chapitre pour tourner les pages jusqu'à l'aventure !
         </p>
       </div>
+
+      {/* Bannière d'accès direct au programme 6-7 ans */}
+      {onOpenLireEtCompter && (
+        <div 
+          onClick={onOpenLireEtCompter}
+          className="w-full max-w-2xl mb-4 bg-gradient-to-r from-[#C8372D] to-[#9B2226] text-white rounded-3xl p-3.5 sm:p-4 shadow-md border-2 border-amber-300 flex items-center justify-between gap-3 cursor-pointer hover:opacity-95 transition active:scale-98"
+        >
+          <div className="flex items-center gap-3">
+            <div className="text-3xl sm:text-4xl">🎒</div>
+            <div className="text-left">
+              <div className="flex items-center gap-2">
+                <span className="font-['Fredoka',sans-serif] font-black text-base sm:text-lg text-amber-200">
+                  Programme Spécial 6-7 ans
+                </span>
+                <span className="bg-[#F2B632] text-[#1F2A44] font-black text-[10px] px-2 py-0.5 rounded-full">
+                  4 semaines
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-white/90 font-medium">
+                Méthode sino-japonaise : sons, cadre de 10, marché FCFA & conte.
+              </p>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-amber-300 shrink-0" />
+        </div>
+      )}
 
       {/* Barre de contrôle manuel des chapitres */}
       <div className="w-full max-w-2xl mb-5 bg-white/95 border-2 border-amber-200 rounded-3xl p-3 sm:p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">

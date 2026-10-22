@@ -11,7 +11,8 @@ import {
   loadSettings, 
   saveSettings,
   recordMistake,
-  resolveMistake
+  resolveMistake,
+  DEFAULT_PROFILES
 } from './utils/storage';
 import { sound } from './utils/audio';
 
@@ -25,6 +26,7 @@ import { ParentSpaceModal } from './components/ParentSpaceModal';
 import { OfflineStandaloneExporter } from './components/OfflineStandaloneExporter';
 import { PrintWorksheets } from './components/PrintWorksheets';
 import { PWAInstallButton } from './components/PWAInstallButton';
+import { LireEtCompterModal } from './components/LireEtCompterModal';
 import { SvgIcons } from './components/SvgIcons';
 import { RotateCcw, HelpCircle, User, Award, Shield } from 'lucide-react';
 
@@ -44,6 +46,7 @@ export default function App() {
   const [showParentModal, setShowParentModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showLireEtCompterModal, setShowLireEtCompterModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -53,7 +56,7 @@ export default function App() {
     }, 3500);
   };
 
-  const activeProfile = profiles.find(p => p.id === activeProfileId) || profiles[0];
+  const activeProfile = profiles.find(p => p.id === activeProfileId) || profiles[0] || DEFAULT_PROFILES[0];
 
   // Calculer toutes les pages du livre
   const allPages: BookPage[] = chaptersList.flatMap(c => c.pages);
@@ -244,6 +247,16 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Bouton Programme Spécial 6-7 ans */}
+          <button
+            onClick={() => setShowLireEtCompterModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C8372D] hover:bg-[#B02A20] text-white font-black text-xs shadow-xs transition active:scale-95 cursor-pointer border border-white/20"
+            title="Programme 'Lire et compter à 6-7 ans' (4 semaines)"
+          >
+            <span>🎒</span>
+            <span className="hidden sm:inline">Méthode 6-7 ans</span>
+          </button>
+
           {/* Bouton Jeu de révision si disponible */}
           <button
             onClick={() => setShowReviewModal(true)}
@@ -284,6 +297,7 @@ export default function App() {
             onOpenBook={handleOpenBook}
             onOpenProfileSelect={() => setShowProfileModal(true)}
             onOpenParentSpace={() => setShowParentModal(true)}
+            onOpenLireEtCompter={() => setShowLireEtCompterModal(true)}
           />
         )}
 
@@ -300,6 +314,7 @@ export default function App() {
             onToggleChapterUnlock={handleToggleChapterUnlock}
             onUnlockAllChapters={handleUnlockAllChapters}
             onToggleAllChaptersUnlocked={handleToggleAllChaptersUnlocked}
+            onOpenLireEtCompter={() => setShowLireEtCompterModal(true)}
           />
         )}
 
@@ -370,7 +385,21 @@ export default function App() {
           onToggleChapterUnlock={handleToggleChapterUnlock}
           onUnlockAllChapters={handleUnlockAllChapters}
           onImportPack={handleImportPack}
+          onOpenLireEtCompter={() => setShowLireEtCompterModal(true)}
           onClose={() => setShowParentModal(false)}
+        />
+      )}
+
+      {/* Modale Programme 'Lire et compter à 6-7 ans' (4 semaines) */}
+      {showLireEtCompterModal && (
+        <LireEtCompterModal
+          isOpen={showLireEtCompterModal}
+          onClose={() => setShowLireEtCompterModal(false)}
+          activeProfile={activeProfile}
+          onAwardStars={(cnt) => {
+            handleUpdateProfile(prev => ({ ...prev, starsCount: prev.starsCount + cnt }));
+            showToast(`+${cnt} ⭐ étoile${cnt > 1 ? 's' : ''} récoltée${cnt > 1 ? 's' : ''} !`);
+          }}
         />
       )}
 

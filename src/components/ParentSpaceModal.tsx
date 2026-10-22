@@ -32,6 +32,7 @@ interface ParentSpaceModalProps {
   onToggleChapterUnlock?: (chapterId: string) => void;
   onUnlockAllChapters: () => void;
   onImportPack: (pack: ContentPack) => void;
+  onOpenLireEtCompter?: () => void;
   onClose: () => void;
 }
 
@@ -46,6 +47,7 @@ export const ParentSpaceModal: React.FC<ParentSpaceModalProps> = ({
   onToggleChapterUnlock,
   onUnlockAllChapters,
   onImportPack,
+  onOpenLireEtCompter,
   onClose,
 }) => {
   // Protection parentale par calcul aléatoire
@@ -241,6 +243,32 @@ export const ParentSpaceModal: React.FC<ParentSpaceModalProps> = ({
                         {activeProfile.starsCount} étoiles récoltées
                       </span>
                     </div>
+
+                    {/* Programme Spécial 6-7 ans */}
+                    {onOpenLireEtCompter && (
+                      <div className="mb-3 p-3 bg-gradient-to-r from-rose-50 to-amber-50 border-2 border-rose-300 rounded-2xl flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-2xl">🎒</span>
+                          <div>
+                            <span className="font-['Fredoka',sans-serif] text-xs font-black text-rose-950 block">
+                              Programme « Lire et compter à 6-7 ans »
+                            </span>
+                            <span className="text-[11px] text-slate-600 font-medium">
+                              4 semaines • 20 séances • Fiche de suivi & jeux
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            onClose();
+                            onOpenLireEtCompter();
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-[#C8372D] hover:bg-rose-700 text-white font-black text-xs shadow-xs transition active:scale-95 cursor-pointer shrink-0"
+                        >
+                          Ouvrir le module
+                        </button>
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-between mt-3 mb-2 pt-2 border-t border-slate-100">
                       <span className="text-xs font-black text-slate-700">Gestion manuelle des chapitres :</span>
