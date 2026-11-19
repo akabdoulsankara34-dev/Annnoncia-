@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChildProfile } from '../types/book';
-import { sound, speakText, stopSpeaking } from '../utils/audio';
+import { sound, speakText, stopSpeaking, isVoiceEnabled } from '../utils/audio';
 import { SvgIcons } from './SvgIcons';
 import { 
   X, 
   Star, 
   Volume2, 
+  VolumeX,
   Plus, 
   Minus, 
   Equal, 
@@ -54,10 +55,21 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
   const [challengeSuccess, setChallengeSuccess] = useState<boolean>(false);
   const [challengesSolved, setChallengesSolved] = useState<number>(0);
 
+  // Synthèse vocale
+  const [autoVoice, setAutoVoice] = useState<boolean>(() => isVoiceEnabled());
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const speakingTimerRef = useRef<number | null>(null);
+
   useEffect(() => {
     if (!isOpen) {
       stopSpeaking();
+      setIsSpeaking(false);
     }
+    return () => {
+      if (speakingTimerRef.current) {
+        window.clearTimeout(speakingTimerRef.current);
+      }
+    };
   }, [isOpen]);
 
   // Réinitialiser le comptage interactif quand l'opération change
@@ -81,6 +93,22 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
         : num1 - num2
       : null;
 
+  const speakNow = (text: string, options?: { rate?: number; onlyIfAuto?: boolean }) => {
+    if (options?.onlyIfAuto && !autoVoice) return;
+    if (speakingTimerRef.current) window.clearTimeout(speakingTimerRef.current);
+    setIsSpeaking(true);
+    const started = speakText(text, {
+      rate: options?.rate ?? 0.86,
+      pitch: 1.15,
+      force: true,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => setIsSpeaking(false),
+    });
+    speakingTimerRef.current = window.setTimeout(() => {
+      setIsSpeaking(false);
+    }, started ? 3800 : 400);
+  };
+
   const handleSelectDigit = (digit: number) => {
     sound.playPop(460 + digit * 20);
     setWarningMsg(null);
@@ -90,15 +118,20 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
       setNum1(digit);
       setActiveSlot(operator ? 'num2' : 'operator');
       if (mode === 'challenge') setShowResult(false);
+      speakNow(String(digit), { rate: 0.94, onlyIfAuto: true });
     } else if (activeSlot === 'num2') {
       setNum2(digit);
       if (operator === '-' && num1 !== null && num1 < digit) {
         setWarningMsg(`Attention : pour soustraire, ${num1} est plus petit que ${digit} !`);
+        speakNow(`${digit}. Attention, ${num1} est plus petit que ${digit}`, { rate: 0.88, onlyIfAuto: true });
+      } else {
+        speakNow(String(digit), { rate: 0.94, onlyIfAuto: true });
       }
       if (mode === 'challenge') setShowResult(false);
     } else {
       // Si l'utilisateur clique un chiffre alors que le slot actif est operator, on remplit num2
       setNum2(digit);
+      speakNow(String(digit), { rate: 0.94, onlyIfAuto: true });
     }
   };
 
@@ -108,8 +141,12 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
     setWarningMsg(null);
     setChallengeSuccess(false);
     setActiveSlot('num2');
+    const opLabel = op === '+' ? 'plus' : 'moins';
     if (op === '-' && num1 !== null && num2 !== null && num1 < num2) {
       setWarningMsg(`Attention : pour enlever, le 1er nombre (${num1}) doit être plus grand que le 2e (${num2}) !`);
+      speakNow(`${opLabel}. Attention, le premier nombre doit être plus grand`, { rate: 0.88, onlyIfAuto: true });
+    } else {
+      speakNow(opLabel, { rate: 0.92, onlyIfAuto: true });
     }
     if (mode === 'challenge') setShowResult(false);
   };
@@ -118,14 +155,14 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
     if (num1 === null || num2 === null || operator === null) {
       sound.playGentleEncouragement();
       setWarningMsg('Choisis d’abord les deux chiffres et un signe (+ ou −) !');
-      speakText('Choisis deux chiffres et un signe plus ou moins !', { force: true });
+      speakNow('Choisis deux chiffres et un signe plus ou moins !', { onlyIfAuto: true });
       return;
     }
 
     if (isSubtractionInvalid) {
       sound.playGentleEncouragement();
       setWarningMsg(`Impossible d’enlever ${num2} de ${num1} ! Inverse les chiffres ou change en +.`);
-      speakText(`Pour enlever, le premier nombre doit être plus grand que ${num2} !`, { force: true });
+      speakNow(`Pour enlever, le premier nombre doit être plus grand que ${num2} !`, { onlyIfAuto: true });
       return;
     }
 
@@ -140,15 +177,106 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
         sound.playSuccess();
         sound.playStarReward();
         onAwardStars(1);
-        speakText(`Bravo ! ${num1} ${opWord} ${num2} égale bien ${res} ! Tu gagnes une étoile !`, { force: true });
+        speakNow(`Bravo ! ${num1} ${opWord} ${num2} égale bien ${res} ! Tu gagnes une étoile !`, { onlyIfAuto: true });
       } else {
         sound.playGentleEncouragement();
         setWarningMsg(`${num1} ${operator} ${num2} = ${res}. On cherche une combinaison qui donne ${targetResult} !`);
-        speakText(`${num1} ${opWord} ${num2} font ${res}. Cherche une opération qui donne ${targetResult} !`, { force: true });
+        speakNow(`${num1} ${opWord} ${num2} font ${res}. Cherche une opération qui donne ${targetResult} !`, { onlyIfAuto: true });
       }
     } else {
       sound.playSuccess();
-      speakText(`${num1} ${opWord} ${num2} égale ${res} !`, { force: true });
+      speakNow(`${num1} ${opWord} ${num2} égale ${res} !`, { onlyIfAuto: true });
+    }
+  };
+
+  const handleSpeakOperation = () => {
+    sound.playPop(520);
+    if (num1 === null && num2 === null) {
+      speakNow('Choisis deux chiffres et un signe plus ou moins pour former ton calcul !');
+      return;
+    }
+    const opWord = operator === '-' ? 'moins' : 'plus';
+    if (num1 !== null && num2 !== null && operator !== null) {
+      if (isSubtractionInvalid) {
+        speakNow(`Attention, on ne peut pas enlever ${num2} de ${num1}.`);
+      } else if (showResult && computedResult !== null) {
+        speakNow(`${num1} ${opWord} ${num2} égale ${computedResult} !`);
+      } else {
+        speakNow(`${num1} ${opWord} ${num2} égale combien ?`);
+      }
+    } else if (num1 !== null) {
+      speakNow(`${num1} ${opWord} combien ?`);
+    } else if (num2 !== null) {
+      speakNow(`Combien ${opWord} ${num2} ?`);
+    }
+  };
+
+  const handleSpeakCountingTool = () => {
+    sound.playPop(540);
+    const n1 = num1 ?? 0;
+    const n2 = num2 ?? 0;
+    if (operator === '-' && isSubtractionInvalid) {
+      speakNow(`Pour enlever, ${n1} doit être plus grand que ${n2}.`);
+      return;
+    }
+
+    if (countingTool === 'tokens') {
+      if (operator === '+') {
+        const list1 = Array.from({ length: n1 }, (_, i) => i + 1).join(', ');
+        const list2 = Array.from({ length: n2 }, (_, i) => n1 + i + 1).join(', ');
+        const sum = n1 + n2;
+        if (n1 === 0 && n2 === 0) {
+          speakNow('Zéro plus zéro égale zéro.');
+        } else {
+          speakNow(
+            `On compte les jetons ensemble : ${list1 ? list1 + ', ' : ''}${list2 ? 'et encore : ' + list2 + ', ' : ''}ça fait ${sum} !`,
+            { rate: 0.82 }
+          );
+        }
+      } else {
+        const rem = Math.max(0, n1 - n2);
+        speakNow(`On a ${n1} jetons. On en enlève ${n2}. Il reste ${rem} jeton${rem > 1 ? 's' : ''} !`, { rate: 0.84 });
+      }
+      return;
+    }
+
+    if (countingTool === 'tenframe') {
+      if (operator === '+') {
+        const sum = n1 + n2;
+        if (sum > 10 && n1 < 10) {
+          const toTen = 10 - n1;
+          const rest = n2 - toTen;
+          speakNow(`Dans la boîte de 10 : ${n1} plus ${toTen} font 10, et encore ${rest}, ça fait ${sum} !`, { rate: 0.82 });
+        } else {
+          speakNow(`Dans la boîte de 10 : ${n1} jetons jaunes et ${n2} jetons bleus font ${sum} !`, { rate: 0.84 });
+        }
+      } else {
+        const rem = Math.max(0, n1 - n2);
+        speakNow(`Dans la boîte de 10, on part de ${n1}, on enlève ${n2}, il reste ${rem} !`, { rate: 0.84 });
+      }
+      return;
+    }
+
+    if (countingTool === 'numberline') {
+      if (operator === '+') {
+        const sum = n1 + n2;
+        const steps = Array.from({ length: n2 }, (_, i) => n1 + i + 1).join(', ');
+        speakNow(`Sur la droite, on part de ${n1} et on avance de ${n2} pas : ${steps ? steps + '. ' : ''}On arrive sur ${sum} !`, { rate: 0.82 });
+      } else {
+        const rem = Math.max(0, n1 - n2);
+        const steps = Array.from({ length: n2 }, (_, i) => n1 - i - 1).join(', ');
+        speakNow(`Sur la droite, on part de ${n1} et on recule de ${n2} pas : ${steps ? steps + '. ' : ''}On arrive sur ${rem} !`, { rate: 0.82 });
+      }
+      return;
+    }
+
+    if (countingTool === 'fingers') {
+      if (operator === '+') {
+        speakNow(`${n1} doigt${n1 > 1 ? 's' : ''} et ${n2} doigt${n2 > 1 ? 's' : ''} font ${n1 + n2} doigts !`, { rate: 0.84 });
+      } else {
+        const rem = Math.max(0, n1 - n2);
+        speakNow(`${n1} doigts moins ${n2} doigts, il reste ${rem} doigt${rem > 1 ? 's' : ''} !`, { rate: 0.84 });
+      }
     }
   };
 
@@ -159,10 +287,14 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
     setNum1(num2);
     setNum2(tmp);
     setWarningMsg(null);
+    const opWord = operator === '-' ? 'moins' : 'plus';
+    speakNow(`${num2} ${opWord} ${num1}`, { rate: 0.9, onlyIfAuto: true });
   };
 
   const handleClear = () => {
     sound.playPop(380);
+    stopSpeaking();
+    setIsSpeaking(false);
     setNum1(null);
     setOperator('+');
     setNum2(null);
@@ -178,18 +310,21 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
       : [...countedTokens, idx];
     setCountedTokens(nextList);
     sound.playPop(420 + nextList.length * 35);
-    speakText(String(nextList.length), { rate: 0.95, force: true });
+    speakNow(String(nextList.length), { rate: 0.95, onlyIfAuto: true });
   };
 
   const handleTapSubToken = (idx: number) => {
     if (removedSubTokens.includes(idx)) {
-      setRemovedSubTokens(removedSubTokens.filter(i => i !== idx));
+      const next = removedSubTokens.filter(i => i !== idx);
+      setRemovedSubTokens(next);
       sound.playPop(460);
+      const remaining = Math.max(0, (num1 || 0) - next.length);
+      speakNow(`Il reste ${remaining}`, { rate: 0.92, onlyIfAuto: true });
     } else {
       const next = [...removedSubTokens, idx];
       setRemovedSubTokens(next);
       sound.playPop(320);
-      speakText(`Moins ${next.length}`, { rate: 0.95, force: true });
+      speakNow(`Moins ${next.length}`, { rate: 0.95, onlyIfAuto: true });
     }
   };
 
@@ -242,6 +377,29 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                sound.playPop();
+                const next = !autoVoice;
+                setAutoVoice(next);
+                if (!next) {
+                  stopSpeaking();
+                  setIsSpeaking(false);
+                } else {
+                  speakNow('Voix activée', { rate: 0.92 });
+                }
+              }}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black transition cursor-pointer border ${
+                autoVoice
+                  ? 'bg-emerald-400 text-emerald-950 border-emerald-200'
+                  : 'bg-white/15 text-white/80 border-white/30 hover:bg-white/25'
+              }`}
+              title={autoVoice ? 'Désactiver la voix automatique' : 'Activer la voix automatique'}
+            >
+              {autoVoice ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">{autoVoice ? 'Voix ON' : 'Voix OFF'}</span>
+            </button>
+
             <div className="flex items-center gap-1 bg-amber-400 text-amber-950 font-black text-xs px-2.5 py-1 rounded-full">
               <Star className="w-3.5 h-3.5 fill-amber-950" />
               <span>{activeProfile.starsCount}</span>
@@ -340,6 +498,7 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
                 onClick={() => {
                   sound.playPop();
                   setActiveSlot('num1');
+                  if (num1 !== null) speakNow(String(num1), { rate: 0.94, onlyIfAuto: true });
                 }}
                 className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-3 font-['Fredoka',sans-serif] text-3xl sm:text-4xl font-black flex flex-col items-center justify-center transition cursor-pointer ${
                   activeSlot === 'num1'
@@ -357,6 +516,7 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
                 onClick={() => {
                   sound.playPop();
                   setActiveSlot('operator');
+                  if (operator) speakNow(operator === '+' ? 'plus' : 'moins', { rate: 0.92, onlyIfAuto: true });
                 }}
                 className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full border-3 font-black text-2xl sm:text-3xl flex items-center justify-center transition cursor-pointer ${
                   operator === '+'
@@ -373,6 +533,7 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
                 onClick={() => {
                   sound.playPop();
                   setActiveSlot('num2');
+                  if (num2 !== null) speakNow(String(num2), { rate: 0.94, onlyIfAuto: true });
                 }}
                 className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-3 font-['Fredoka',sans-serif] text-3xl sm:text-4xl font-black flex flex-col items-center justify-center transition cursor-pointer ${
                   activeSlot === 'num2'
@@ -396,12 +557,7 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
 
               {/* Emplacement Résultat */}
               <div
-                onClick={() => {
-                  if (computedResult !== null && showResult) {
-                    const opWord = operator === '+' ? 'plus' : 'moins';
-                    speakText(`${num1} ${opWord} ${num2} égale ${computedResult}`, { force: true });
-                  }
-                }}
+                onClick={handleSpeakOperation}
                 className={`min-w-[72px] sm:min-w-[84px] h-16 sm:h-20 px-3 rounded-2xl border-3 font-['Fredoka',sans-serif] text-3xl sm:text-4xl font-black flex flex-col items-center justify-center cursor-pointer transition ${
                   challengeSuccess
                     ? 'bg-emerald-500 border-emerald-600 text-white shadow-lg scale-105'
@@ -409,10 +565,26 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
                     ? 'bg-amber-100 border-amber-400 text-amber-950'
                     : 'bg-slate-100 border-dashed border-slate-300 text-slate-400'
                 }`}
+                title="Touche pour écouter l'opération"
               >
                 <span>{showResult && computedResult !== null ? computedResult : '?'}</span>
                 <span className="text-[9px] font-bold uppercase opacity-75">Résultat</span>
               </div>
+            </div>
+
+            {/* Bouton Écouter l'opération complète */}
+            <div className="mt-2.5 flex justify-center">
+              <button
+                onClick={handleSpeakOperation}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-black flex items-center gap-1.5 border transition cursor-pointer ${
+                  isSpeaking
+                    ? 'bg-blue-600 text-white border-blue-700 shadow-sm'
+                    : 'bg-blue-50 text-blue-900 border-blue-200 hover:bg-blue-100'
+                }`}
+              >
+                <Volume2 className={`w-3.5 h-3.5 ${isSpeaking ? 'animate-bounce' : ''}`} />
+                <span>{isSpeaking ? 'Lecture en cours…' : 'Écouter l’opération'}</span>
+              </button>
             </div>
 
             {/* Alerte douce / Inversion rapide */}
@@ -523,11 +695,21 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
           {/* OUTILS DE COMPTAGE VISUELS POUR L'ENFANT */}
           <div className="bg-white rounded-3xl border-2 border-[#1B4965]/25 p-3.5 sm:p-4 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-500" />
                 <span className="font-['Fredoka',sans-serif] text-sm sm:text-base font-black text-slate-800">
                   Outils de comptage pour t’aider :
                 </span>
+                {(num1 !== null || num2 !== null) && (
+                  <button
+                    onClick={handleSpeakCountingTool}
+                    className="px-2.5 py-1 rounded-full bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-950 text-[11px] font-black flex items-center gap-1 cursor-pointer transition"
+                    title="Compter et expliquer avec la voix"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>Compter à voix haute</span>
+                  </button>
+                )}
               </div>
 
               {/* Sélecteur des 4 outils */}
@@ -673,20 +855,27 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
                             }
 
                             return (
-                              <div
+                              <button
                                 key={cellIdx}
-                                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-xs font-black ${
+                                type="button"
+                                onClick={() => {
+                                  if (cellState !== 'empty') {
+                                    sound.playPop(420 + globalIdx * 20);
+                                    speakNow(String(globalIdx + 1), { rate: 0.95 });
+                                  }
+                                }}
+                                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-xs font-black transition ${
                                   cellState === 'n1'
-                                    ? 'bg-amber-400 border-amber-600 text-amber-950'
+                                    ? 'bg-amber-400 border-amber-600 text-amber-950 cursor-pointer hover:scale-105'
                                     : cellState === 'n2'
-                                    ? 'bg-blue-500 border-blue-700 text-white'
+                                    ? 'bg-blue-500 border-blue-700 text-white cursor-pointer hover:scale-105'
                                     : cellState === 'removed'
-                                    ? 'bg-rose-100 border-rose-400 text-rose-600'
-                                    : 'bg-slate-50 border-slate-300'
+                                    ? 'bg-rose-100 border-rose-400 text-rose-600 cursor-pointer'
+                                    : 'bg-slate-50 border-slate-300 cursor-default'
                                 }`}
                               >
                                 {cellState === 'removed' ? '✕' : ''}
-                              </div>
+                              </button>
                             );
                           })}
                         </div>
@@ -748,11 +937,31 @@ export const MathBuilderModal: React.FC<MathBuilderModalProps> = ({
                 {/* OUTIL 4 : DOIGTS DES MAINS */}
                 {countingTool === 'fingers' && (
                   <div className="bg-amber-50/60 rounded-2xl border border-amber-200 p-3 flex flex-wrap items-center justify-center gap-3">
-                    {renderFingerHand(num1 || 0, '1er nombre', 'bg-white border-blue-200 text-blue-900')}
+                    <div
+                      onClick={() => {
+                        const c = num1 || 0;
+                        sound.playPop(480);
+                        speakNow(`${c} doigt${c > 1 ? 's' : ''}`, { rate: 0.9 });
+                      }}
+                      className="cursor-pointer hover:scale-105 transition"
+                      title="Touche pour écouter"
+                    >
+                      {renderFingerHand(num1 || 0, '1er nombre', 'bg-white border-blue-200 text-blue-900')}
+                    </div>
                     <div className="font-black text-2xl text-slate-500">
                       {operator}
                     </div>
-                    {renderFingerHand(num2 || 0, '2e nombre', 'bg-white border-emerald-200 text-emerald-900')}
+                    <div
+                      onClick={() => {
+                        const c = num2 || 0;
+                        sound.playPop(540);
+                        speakNow(`${c} doigt${c > 1 ? 's' : ''}`, { rate: 0.9 });
+                      }}
+                      className="cursor-pointer hover:scale-105 transition"
+                      title="Touche pour écouter"
+                    >
+                      {renderFingerHand(num2 || 0, '2e nombre', 'bg-white border-emerald-200 text-emerald-900')}
+                    </div>
                   </div>
                 )}
               </>
