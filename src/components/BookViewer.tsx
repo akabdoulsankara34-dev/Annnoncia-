@@ -18,6 +18,7 @@ import { CountTo50Activity } from './activities/CountTo50Activity';
 import { TensAndUnitsActivity } from './activities/TensAndUnitsActivity';
 import { CursiveManuscritActivity } from './activities/CursiveManuscritActivity';
 import { SvgIcons } from './SvgIcons';
+import { ChapterQuizModal } from './ChapterQuizModal';
 import { sound, speakText, stopSpeaking, setVoiceEnabled } from '../utils/audio';
 import { 
   ChevronLeft, 
@@ -30,7 +31,9 @@ import {
   Sparkles, 
   Award, 
   Clock,
-  RotateCcw
+  RotateCcw,
+  Trophy,
+  CheckCircle2
 } from 'lucide-react';
 
 interface BookViewerProps {
@@ -67,6 +70,7 @@ export const BookViewer: React.FC<BookViewerProps> = ({
   const [guideMood, setGuideMood] = useState<'happy' | 'talking' | 'celebrating' | 'thinking' | 'gentle'>('happy');
   const [soundOn, setSoundOn] = useState(settings.soundEnabled);
   const [showSessionBreak, setShowSessionBreak] = useState(false);
+  const [showChapterQuiz, setShowChapterQuiz] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   // Évaluation adaptative (si 2 erreurs successives, scaffolding)
@@ -75,6 +79,9 @@ export const BookViewer: React.FC<BookViewerProps> = ({
 
   const currentPage = allPages[currentPageIndex] || allPages[0];
   const currentChapter = chapters.find(c => c.id === currentPage?.chapterId) || chapters[0];
+  const currentChapterIndex = chapters.findIndex(c => c.id === currentChapter?.id);
+  const isLastPageOfChapter = currentChapter?.pages[currentChapter.pages.length - 1]?.id === currentPage?.id;
+  const chapterQuizRecord = activeProfile.completedQuizzes?.[currentChapter?.id || ''];
 
   // Mémoriser la dernière page visitée (marque-page)
   useEffect(() => {
@@ -784,6 +791,44 @@ export const BookViewer: React.FC<BookViewerProps> = ({
             )}
           </div>
 
+          {/* Bannière Quiz de fin de chapitre sur la dernière page de chaque chapitre */}
+          {isLastPageOfChapter && (
+            <div className="w-full mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-amber-100 via-amber-50 to-emerald-50 border-2 border-amber-400 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-3 text-left">
+                <div className="w-11 h-11 rounded-2xl bg-amber-400 text-amber-950 flex items-center justify-center shrink-0 shadow-xs">
+                  <Trophy className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-['Fredoka',sans-serif] text-sm sm:text-base font-black text-slate-900">
+                      Fin du Chapitre {currentChapter.number} !
+                    </span>
+                    {chapterQuizRecord && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Validé ({chapterQuizRecord.score}/{chapterQuizRecord.total})
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs font-semibold text-slate-600">
+                    Passe le quiz interactif pour valider ta compréhension et gagner des étoiles ⭐ !
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  sound.playPop();
+                  setShowChapterQuiz(true);
+                }}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#C8372D] hover:bg-[#B02A20] text-white font-['Fredoka',sans-serif] font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer shrink-0"
+              >
+                <Trophy className="w-4 h-4 text-amber-300" />
+                <span>{chapterQuizRecord ? 'Refaire le Quiz ⭐' : 'Lancer le Quiz ⭐'}</span>
+              </button>
+            </div>
+          )}
+
           {/* Pied de page du livre avec numéros et bouton suivant doux */}
           <div className="w-full flex items-center justify-between pt-2 border-t border-amber-200/60 text-xs font-bold text-slate-500">
             <span>Le Grand Livre Magique de CP</span>
@@ -791,6 +836,50 @@ export const BookViewer: React.FC<BookViewerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Modal Quiz Interactif de fin de chapitre */}
+      {showChapterQuiz && currentChapter && (
+        <ChapterQuizModal
+          chapter={currentChapter}
+          activeProfile={activeProfile}
+          hasNextChapter={currentChapterIndex >= 0 && currentChapterIndex < chapters.length - 1}
+          onCompleteQuiz={(chapterId, score, total, starsEarned) => {
+            onUpdateProfile(prev => {
+              const nextStickers = [...prev.stickersEarned];
+              if (!nextStickers.includes(currentChapter.stickerReward.id)) {
+                nextStickers.push(currentChapter.stickerReward.id);
+              }
+              const nextChap = chapters[currentChapterIndex + 1];
+              const nextUnlocked = nextChap
+                ? Array.from(new Set([...prev.unlockedChapters, nextChap.id]))
+                : prev.unlockedChapters;
+
+              return {
+                ...prev,
+                starsCount: prev.starsCount + starsEarned,
+                stickersEarned: nextStickers,
+                unlockedChapters: nextUnlocked,
+                completedQuizzes: {
+                  ...(prev.completedQuizzes || {}),
+                  [chapterId]: { score, total, starsEarned },
+                },
+              };
+            });
+          }}
+          onGoToNextChapter={() => {
+            const nextChap = chapters[currentChapterIndex + 1];
+            if (nextChap && nextChap.pages[0]) {
+              const nextIdx = allPages.findIndex(p => p.id === nextChap.pages[0].id);
+              if (nextIdx >= 0) {
+                setCurrentPageIndex(nextIdx);
+                setPageMistakes(0);
+                setUseSimplified(false);
+              }
+            }
+          }}
+          onClose={() => setShowChapterQuiz(false)}
+        />
+      )}
 
       {/* Modal bienveillante de fin de séance 15 minutes */}
       {showSessionBreak && (

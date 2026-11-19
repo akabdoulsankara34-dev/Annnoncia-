@@ -104,6 +104,7 @@ export function loadProfiles(): ChildProfile[] {
       placedStickers: Array.isArray(p.placedStickers) ? p.placedStickers : [],
       reviewQueue: Array.isArray(p.reviewQueue) ? p.reviewQueue : [],
       lastPageVisited: typeof p.lastPageVisited === 'number' ? p.lastPageVisited : 1,
+      completedQuizzes: p.completedQuizzes || {},
     }));
   } catch {
     return DEFAULT_PROFILES;

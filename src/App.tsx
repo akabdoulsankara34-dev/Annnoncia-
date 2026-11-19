@@ -27,6 +27,9 @@ import { OfflineStandaloneExporter } from './components/OfflineStandaloneExporte
 import { PrintWorksheets } from './components/PrintWorksheets';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { LireEtCompterModal } from './components/LireEtCompterModal';
+import { SyllableFusionModal } from './components/SyllableFusionModal';
+import { MathBuilderModal } from './components/MathBuilderModal';
+import { ChapterQuizModal } from './components/ChapterQuizModal';
 import { SvgIcons } from './components/SvgIcons';
 import { RotateCcw, HelpCircle, User, Award, Shield } from 'lucide-react';
 
@@ -47,6 +50,9 @@ export default function App() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showLireEtCompterModal, setShowLireEtCompterModal] = useState(false);
+  const [showSyllableFusionModal, setShowSyllableFusionModal] = useState(false);
+  const [showMathBuilderModal, setShowMathBuilderModal] = useState(false);
+  const [activeQuizChapter, setActiveQuizChapter] = useState<Chapter | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -247,11 +253,31 @@ export default function App() {
           <PWAInstallButton />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Bouton Module Fusion Consonnes + Voyelles */}
+          <button
+            onClick={() => setShowSyllableFusionModal(true)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-xs transition active:scale-95 cursor-pointer border border-white/20"
+            title="Atelier Fusion Consonnes & Voyelles"
+          >
+            <span>🔤</span>
+            <span className="hidden lg:inline">Syllabes</span>
+          </button>
+
+          {/* Bouton Module Calcul Addition & Soustraction */}
+          <button
+            onClick={() => setShowMathBuilderModal(true)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-xs transition active:scale-95 cursor-pointer border border-white/20"
+            title="Atelier Calcul (+ / −) avec outils de comptage"
+          >
+            <span>🧮</span>
+            <span className="hidden lg:inline">Calcul +/−</span>
+          </button>
+
           {/* Bouton Programme Spécial 6-7 ans */}
           <button
             onClick={() => setShowLireEtCompterModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C8372D] hover:bg-[#B02A20] text-white font-black text-xs shadow-xs transition active:scale-95 cursor-pointer border border-white/20"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#C8372D] hover:bg-[#B02A20] text-white font-black text-xs shadow-xs transition active:scale-95 cursor-pointer border border-white/20"
             title="Programme 'Lire et compter à 6-7 ans' (4 semaines)"
           >
             <span>🎒</span>
@@ -299,6 +325,8 @@ export default function App() {
             onOpenProfileSelect={() => setShowProfileModal(true)}
             onOpenParentSpace={() => setShowParentModal(true)}
             onOpenLireEtCompter={() => setShowLireEtCompterModal(true)}
+            onOpenSyllableFusion={() => setShowSyllableFusionModal(true)}
+            onOpenMathBuilder={() => setShowMathBuilderModal(true)}
           />
         )}
 
@@ -308,6 +336,7 @@ export default function App() {
             unlockedChapters={settings.allChaptersUnlocked ? chaptersList.map(c => c.id) : activeProfile.unlockedChapters}
             starsCount={activeProfile.starsCount}
             allChaptersUnlocked={settings.allChaptersUnlocked}
+            completedQuizzes={activeProfile.completedQuizzes || {}}
             onSelectChapter={handleSelectChapterFromContents}
             onBackToCover={() => setView('cover')}
             onOpenStickerAlbum={() => setShowStickerModal(true)}
@@ -316,6 +345,9 @@ export default function App() {
             onUnlockAllChapters={handleUnlockAllChapters}
             onToggleAllChaptersUnlocked={handleToggleAllChaptersUnlocked}
             onOpenLireEtCompter={() => setShowLireEtCompterModal(true)}
+            onOpenSyllableFusion={() => setShowSyllableFusionModal(true)}
+            onOpenMathBuilder={() => setShowMathBuilderModal(true)}
+            onOpenChapterQuiz={(chap) => setActiveQuizChapter(chap)}
           />
         )}
 
@@ -402,6 +434,67 @@ export default function App() {
             handleUpdateProfile(prev => ({ ...prev, starsCount: prev.starsCount + cnt }));
             showToast(`+${cnt} ⭐ étoile${cnt > 1 ? 's' : ''} récoltée${cnt > 1 ? 's' : ''} !`);
           }}
+        />
+      )}
+
+      {/* Modale Module Fusion Consonnes & Voyelles */}
+      {showSyllableFusionModal && (
+        <SyllableFusionModal
+          isOpen={showSyllableFusionModal}
+          onClose={() => setShowSyllableFusionModal(false)}
+          activeProfile={activeProfile}
+          onAwardStars={(cnt) => {
+            handleUpdateProfile(prev => ({ ...prev, starsCount: prev.starsCount + cnt }));
+            showToast(`+${cnt} ⭐ étoile${cnt > 1 ? 's' : ''} récoltée${cnt > 1 ? 's' : ''} !`);
+          }}
+        />
+      )}
+
+      {/* Modale Module Addition & Soustraction + Outils de comptage */}
+      {showMathBuilderModal && (
+        <MathBuilderModal
+          isOpen={showMathBuilderModal}
+          onClose={() => setShowMathBuilderModal(false)}
+          activeProfile={activeProfile}
+          onAwardStars={(cnt) => {
+            handleUpdateProfile(prev => ({ ...prev, starsCount: prev.starsCount + cnt }));
+            showToast(`+${cnt} ⭐ étoile${cnt > 1 ? 's' : ''} récoltée${cnt > 1 ? 's' : ''} !`);
+          }}
+        />
+      )}
+
+      {/* Modale Quiz de chapitre depuis le sommaire */}
+      {activeQuizChapter && (
+        <ChapterQuizModal
+          chapter={activeQuizChapter}
+          activeProfile={activeProfile}
+          hasNextChapter={chaptersList.findIndex(c => c.id === activeQuizChapter.id) < chaptersList.length - 1}
+          onCompleteQuiz={(chapterId, score, total, starsEarned) => {
+            handleUpdateProfile(prev => {
+              const nextStickers = [...prev.stickersEarned];
+              if (!nextStickers.includes(activeQuizChapter.stickerReward.id)) {
+                nextStickers.push(activeQuizChapter.stickerReward.id);
+              }
+              return {
+                ...prev,
+                starsCount: prev.starsCount + starsEarned,
+                stickersEarned: nextStickers,
+                completedQuizzes: {
+                  ...(prev.completedQuizzes || {}),
+                  [chapterId]: { score, total, starsEarned },
+                },
+              };
+            });
+            showToast(`🏆 Quiz validé ! +${starsEarned} ⭐ gagnées !`);
+          }}
+          onGoToNextChapter={() => {
+            const idx = chaptersList.findIndex(c => c.id === activeQuizChapter.id);
+            const nextChap = chaptersList[idx + 1];
+            if (nextChap) {
+              handleSelectChapterFromContents(nextChap);
+            }
+          }}
+          onClose={() => setActiveQuizChapter(null)}
         />
       )}
 

@@ -10,6 +10,8 @@ interface BookCoverProps {
   onOpenProfileSelect: () => void;
   onOpenParentSpace: () => void;
   onOpenLireEtCompter?: () => void;
+  onOpenSyllableFusion?: () => void;
+  onOpenMathBuilder?: () => void;
 }
 
 export const BookCover: React.FC<BookCoverProps> = ({
@@ -18,6 +20,8 @@ export const BookCover: React.FC<BookCoverProps> = ({
   onOpenProfileSelect,
   onOpenParentSpace,
   onOpenLireEtCompter,
+  onOpenSyllableFusion,
+  onOpenMathBuilder,
 }) => {
   const handleOpen = () => {
     sound.playPageFlip();
@@ -120,20 +124,46 @@ export const BookCover: React.FC<BookCoverProps> = ({
       </div>
 
       {/* Boutons d'accès complémentaires */}
-      <div className="mt-5 flex flex-wrap items-center justify-center gap-3 z-10 px-4">
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5 z-10 px-4 max-w-xl">
+        {onOpenSyllableFusion && (
+          <button
+            onClick={() => {
+              sound.playPop();
+              onOpenSyllableFusion();
+            }}
+            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white border-2 border-emerald-300 font-black text-xs sm:text-sm py-2 px-3.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer"
+          >
+            <span>🔤</span>
+            <span>Fusion Syllabes</span>
+          </button>
+        )}
+
+        {onOpenMathBuilder && (
+          <button
+            onClick={() => {
+              sound.playPop();
+              onOpenMathBuilder();
+            }}
+            className="flex items-center gap-1.5 bg-amber-400 hover:bg-amber-500 text-amber-950 border-2 border-white font-black text-xs sm:text-sm py-2 px-3.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer"
+          >
+            <span>🧮</span>
+            <span>Calcul + / −</span>
+          </button>
+        )}
+
         {onOpenLireEtCompter && (
           <button
             onClick={onOpenLireEtCompter}
-            className="flex items-center gap-2 bg-[#C8372D] hover:bg-[#B02A20] text-white border-2 border-amber-300 font-black text-xs sm:text-sm py-2 px-4 rounded-full shadow-lg transition active:scale-95 cursor-pointer"
+            className="flex items-center gap-1.5 bg-[#C8372D] hover:bg-[#B02A20] text-white border-2 border-amber-300 font-black text-xs sm:text-sm py-2 px-3.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer"
           >
             <span>🎒</span>
-            <span>Méthode 6-7 ans (4 semaines)</span>
+            <span>Méthode 6-7 ans</span>
           </button>
         )}
 
         <button
           onClick={onOpenParentSpace}
-          className="text-xs text-white/70 hover:text-white underline font-semibold transition cursor-pointer py-2 px-3 rounded-full hover:bg-white/10"
+          className="text-xs text-white/75 hover:text-white underline font-semibold transition cursor-pointer py-2 px-3 rounded-full hover:bg-white/10"
         >
           ⚙️ Espace Enseignants & Parents
         </button>

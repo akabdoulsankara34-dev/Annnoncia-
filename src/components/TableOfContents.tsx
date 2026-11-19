@@ -1,13 +1,14 @@
 import React from 'react';
 import { Chapter } from '../types/book';
 import { sound } from '../utils/audio';
-import { BookOpen, Sparkles, ChevronRight, ArrowLeft, Unlock, Lock, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Sparkles, ChevronRight, ArrowLeft, Unlock, Lock, CheckCircle2, Trophy, Calculator } from 'lucide-react';
 
 interface TableOfContentsProps {
   chapters: Chapter[];
   unlockedChapters: string[];
   starsCount: number;
   allChaptersUnlocked?: boolean;
+  completedQuizzes?: Record<string, { score: number; total: number; starsEarned: number }>;
   onSelectChapter: (chapter: Chapter) => void;
   onBackToCover: () => void;
   onOpenStickerAlbum: () => void;
@@ -16,6 +17,9 @@ interface TableOfContentsProps {
   onUnlockAllChapters?: () => void;
   onToggleAllChaptersUnlocked?: () => void;
   onOpenLireEtCompter?: () => void;
+  onOpenSyllableFusion?: () => void;
+  onOpenMathBuilder?: () => void;
+  onOpenChapterQuiz?: (chapter: Chapter) => void;
 }
 
 export const TableOfContents: React.FC<TableOfContentsProps> = ({
@@ -23,6 +27,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
   unlockedChapters,
   starsCount,
   allChaptersUnlocked = false,
+  completedQuizzes = {},
   onSelectChapter,
   onBackToCover,
   onOpenStickerAlbum,
@@ -31,6 +36,9 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
   onUnlockAllChapters,
   onToggleAllChaptersUnlocked,
   onOpenLireEtCompter,
+  onOpenSyllableFusion,
+  onOpenMathBuilder,
+  onOpenChapterQuiz,
 }) => {
   const areAllUnlocked = allChaptersUnlocked || chapters.every(c => unlockedChapters.includes(c.id));
 
@@ -72,6 +80,59 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
           Touche un chapitre pour tourner les pages jusqu'à l'aventure !
         </p>
       </div>
+
+      {/* Ateliers interactifs : Syllabes & Calcul */}
+      {(onOpenSyllableFusion || onOpenMathBuilder) && (
+        <div className="w-full max-w-2xl mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {onOpenSyllableFusion && (
+            <button
+              onClick={() => {
+                sound.playPop();
+                onOpenSyllableFusion();
+              }}
+              className="p-3.5 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white border-2 border-emerald-300 shadow-md flex items-center justify-between gap-3 cursor-pointer hover:opacity-95 active:scale-98 transition text-left"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">🔤</span>
+                <div>
+                  <span className="font-['Fredoka',sans-serif] font-black text-base block leading-tight">
+                    Fusion Syllabes
+                  </span>
+                  <span className="text-xs text-emerald-100 font-semibold">
+                    Consonnes + Voyelles & Défis
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-emerald-100 shrink-0" />
+            </button>
+          )}
+
+          {onOpenMathBuilder && (
+            <button
+              onClick={() => {
+                sound.playPop();
+                onOpenMathBuilder();
+              }}
+              className="p-3.5 rounded-3xl bg-gradient-to-br from-[#1B4965] to-[#2B6CB0] text-white border-2 border-amber-300 shadow-md flex items-center justify-between gap-3 cursor-pointer hover:opacity-95 active:scale-98 transition text-left"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-400 text-amber-950 flex items-center justify-center shrink-0">
+                  <Calculator className="w-6 h-6" />
+                </div>
+                <div>
+                  <span className="font-['Fredoka',sans-serif] font-black text-base block leading-tight">
+                    Atelier Calcul (+ / −)
+                  </span>
+                  <span className="text-xs text-amber-100 font-semibold">
+                    Chiffres, signes & outils de comptage
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-amber-300 shrink-0" />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Bannière d'accès direct au programme 6-7 ans */}
       {onOpenLireEtCompter && (
@@ -232,6 +293,27 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({
               <div className="flex items-center gap-2 shrink-0">
                 {isUnlocked ? (
                   <div className="flex items-center gap-2">
+                    {onOpenChapterQuiz && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sound.playPop();
+                          onOpenChapterQuiz(chap);
+                        }}
+                        className={`px-2.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 transition cursor-pointer border ${
+                          completedQuizzes[chap.id]
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200'
+                            : 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
+                        }`}
+                        title="Quiz de compréhension de fin de chapitre"
+                      >
+                        <Trophy className="w-3.5 h-3.5 text-amber-600" />
+                        <span className="hidden xs:inline">
+                          {completedQuizzes[chap.id] ? 'Quiz ✓' : 'Quiz ⭐'}
+                        </span>
+                      </button>
+                    )}
+
                     {onToggleChapterUnlock && (
                       <button
                         onClick={(e) => {

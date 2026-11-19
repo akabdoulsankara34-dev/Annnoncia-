@@ -187,6 +187,7 @@ export interface ChildProfile {
     lastPracticed?: string;
   }[];
   lastPageVisited?: number;
+  completedQuizzes?: Record<string, { score: number; total: number; starsEarned: number }>;
 }
 
 export interface AppSettings {
